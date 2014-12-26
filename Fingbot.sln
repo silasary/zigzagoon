@@ -1,0 +1,20 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Fingbot", "Fingbot\Fingbot.csproj", "{CADD334F-BB0E-48F7-A06A-3FD7456EC50F}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{CADD334F-BB0E-48F7-A06A-3FD7456EC50F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{CADD334F-BB0E-48F7-A06A-3FD7456EC50F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{CADD334F-BB0E-48F7-A06A-3FD7456EC50F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{CADD334F-BB0E-48F7-A06A-3FD7456EC50F}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

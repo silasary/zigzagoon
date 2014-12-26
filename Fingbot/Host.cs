@@ -38,5 +38,17 @@ namespace Fingbot
 
         [DataMember]
         public bool IsFixture { get; set; }
+
+        public object FriendlyName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(Name))
+                    return Name;
+                if (!string.IsNullOrWhiteSpace(Hostname))
+                    return Hostname;
+                return HardwareAddress;
+            }
+        }
     }
 }

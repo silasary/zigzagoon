@@ -18,7 +18,7 @@ namespace Fingbot
         {
             foreach (var host in KnownHosts)
             {
-                if (!string.IsNullOrWhiteSpace(host.Owner) && !string.IsNullOrWhiteSpace(host.Type))
+                if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
                     continue;
                 if (host.State == "down")
                     continue;
@@ -59,6 +59,22 @@ namespace Fingbot
                     prop.SetValue(host, key.Value, null);
                 }
             }
+        }
+
+        internal Host PickCertainHost()
+        {
+            foreach (var host in KnownHosts)
+            {
+                if (string.IsNullOrWhiteSpace(host.Owner))
+                    continue;
+                if (host.State == "down")
+                    continue;
+                if (host.IsFixture)
+                    continue;
+                return host;
+            }
+            return null;
+
         }
     }
 }

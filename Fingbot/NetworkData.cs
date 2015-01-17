@@ -1,5 +1,7 @@
 ﻿using Kamahl.Common;
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
 
@@ -12,10 +14,26 @@ namespace Fingbot
         public NetworkData()
         {
             KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? new List<Host>();
+            var fing = Process.GetProcessesByName("fing");
+            if (fing.Length == 0)
+            {
+                Process.Start("fing", PersistentSingleton<Settings>.Instance.FingArgs);
+
+            }
         }
 
         public Host PickIncompleteHost()
         {
+            foreach (var host in KnownHosts)
+            {
+                if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
+                    continue;
+                if (host.State == "down")
+                    continue;
+                if (string.IsNullOrEmpty(host.Hostname))
+                    continue;
+                return host;
+            }
             foreach (var host in KnownHosts)
             {
                 if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
@@ -71,6 +89,9 @@ namespace Fingbot
                     continue;
                 if (host.IsFixture)
                     continue;
+                if (host.IsOld)
+                    continue;
+                //if (host.LastChangeTime
                 return host;
             }
             return null;

@@ -4,6 +4,7 @@ using SlackRTM.Events;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
@@ -45,9 +46,17 @@ namespace Fingbot
             {
                 if (!slack.Connected)
                 {
-                    Console.WriteLine("Reconnecting...");
-                    slack.Init(settings.Token);
-                    slack.Connect();
+                    try
+                    {
+                        Console.WriteLine("Reconnecting...");
+                        slack.Init(settings.Token);
+                        slack.Connect();
+                    }
+                    catch (WebException c)
+                    {
+                        Console.WriteLine(c);
+                        Thread.Sleep(new TimeSpan(0, 5, 0)); // Longer wait, because something's wrong.
+                    }
                 }
                 Thread.Sleep(1000);
             }

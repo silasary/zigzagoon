@@ -41,7 +41,7 @@
     </Reference>
     <Reference Include="SlackRTM, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SlackRTM.1.0.0-CI00007\lib\net40\SlackRTM.dll</HintPath>
+      <HintPath>..\packages\SlackRTM.1.0.0-CI00008\lib\net40\SlackRTM.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />

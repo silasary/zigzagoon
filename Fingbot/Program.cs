@@ -42,6 +42,7 @@ namespace Fingbot
             slack.Connect();
 
             bool Running = true;
+            int attempts = 0;
             while (Running)
             {
                 if (!slack.Connected)
@@ -51,11 +52,12 @@ namespace Fingbot
                         Console.WriteLine("Reconnecting...");
                         slack.Init(settings.Token);
                         slack.Connect();
+                        attempts = 0;
                     }
                     catch (WebException c)
                     {
                         Console.WriteLine(c);
-                        Thread.Sleep(new TimeSpan(0, 5, 0)); // Longer wait, because something's wrong.
+                        Thread.Sleep(new TimeSpan(0, attempts++, 1)); // Longer wait, because something's wrong.
                     }
                 }
                 Thread.Sleep(1000);
@@ -64,6 +66,7 @@ namespace Fingbot
 
         static void slack_OnEvent(object sender, SlackEventArgs e)
         {
+            var instance = sender as Slack;
             if (e.Data.Type == "hello")
             {
                 Console.WriteLine("Connected.");
@@ -71,6 +74,8 @@ namespace Fingbot
             if (e.Data is Message)
             {
                 var message = e.Data as Message;
+                if (message.Hidden != null && Boolean.Parse(message.Hidden))
+                    return;
                 Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
 
                 bool match =
@@ -89,9 +94,39 @@ namespace Fingbot
                     }
                     else
                         (sender as Slack).SendMessage(message.Channel, "Nobody. It's lonely here :frowning:");
-
+                    LastHost = host;
+                    return;
                 }
-
+                var pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+That's (?<Owner>a|my|the|(@[?<un>\w]+)'s) (?<Type>\w+)?"), 
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    if (LastHost == null)
+                    {
+                        instance.SendMessage(message.Channel,  String.Format("@{0}: I have no idea what you're talking about.", message.User));
+                        return;
+                    }
+                    LastHost.Type = pmatch.Groups["Type"].Value;
+                    var Owner = pmatch.Groups["Owner"].Value;
+                    switch (Owner)
+                    {
+                        case "my":
+                            LastHost.Owner = instance.GetUser(message.User).Name;
+                            break;
+                        case "a":
+                        case "the":
+                            LastHost.Owner = "ADB";
+                            LastHost.IsFixture = true;
+                            break;
+                        default:
+                            LastHost.Owner = pmatch.Groups["un"].Value;
+                            break;
+                    }
+                    instance.SendMessage(message.Channel, string.Format("Ok. {0} is {1}'s {2}.  I'll keep that in mind :simple_smile:", LastHost.FriendlyName, LastHost.Owner, LastHost.Type));
+                    Singleton<NetworkData>.Instance.Save();
+                }
             }
         }
 
@@ -117,5 +152,7 @@ namespace Fingbot
                 return match.Groups[0].Value;
             });
         }
+
+        public static Host LastHost { get; set; }
     }
 }

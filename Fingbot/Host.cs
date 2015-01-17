@@ -51,6 +51,13 @@ namespace Fingbot
             }
         }
 
-        public bool IsOld { get { return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalDays > 2; } set { } }
+        public bool IsOld
+        {
+            get
+            {
+                if (LastChangeTime == null)
+                    //LastChangeTime = this.FirstSeen;
+                    return false;
+            return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalDays > 2; } set { } }
     }
 }

@@ -17,5 +17,8 @@ namespace Fingbot
 
         [DataMember]
         public string FingXml { get; set; }
+
+        [DataMember]
+        public string FingArgs { get; set; }
     }
 }

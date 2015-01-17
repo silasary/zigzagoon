@@ -18,6 +18,8 @@ namespace Fingbot
             if (fing.Length == 0)
             {
                 Process.Start("fing", PersistentSingleton<Settings>.Instance.FingArgs);
+                if (string.IsNullOrEmpty(PersistentSingleton<Settings>.Instance.FingArgs))
+                    PersistentSingleton<Settings>.Dirty();
 
             }
         }

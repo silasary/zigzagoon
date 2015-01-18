@@ -73,6 +73,7 @@ namespace Fingbot
             }
             if (e.Data is Message)
             {
+                Singleton<NetworkData>.Instance.Refresh();
                 var message = e.Data as Message;
                 if (message.Hidden != null && Boolean.Parse(message.Hidden))
                     return;

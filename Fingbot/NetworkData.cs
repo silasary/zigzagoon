@@ -11,6 +11,8 @@ namespace Fingbot
     {
         private List<Host> KnownHosts;
 
+        public Host[] AllHosts { get { return KnownHosts.ToArray(); } }
+
         public NetworkData()
         {
             KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? new List<Host>();
@@ -50,6 +52,11 @@ namespace Fingbot
 
         public void Refresh()
         {
+            while (!System.IO.File.Exists(PersistentSingleton<Settings>.Instance.FingXml))
+            {
+                Console.WriteLine("Waiting for FingXml to be written.");
+                System.Threading.Thread.Sleep(new TimeSpan(0,0,10));
+            }
             XDocument doc = XDocument.Load(PersistentSingleton<Settings>.Instance.FingXml);
             foreach (var host in doc.Root.Element("Hosts").Elements())
             {
@@ -107,6 +114,20 @@ namespace Fingbot
         private int SortRandom(Host x, Host y)
         {
             return Singleton<Random>.Instance.Next(-1, 1);
+        }
+
+        internal string Status(Host host)
+        {
+            if (host.State == "down")
+                return "Offline";
+            if (host.IsFixture)
+                return "Ignored as fixture";
+            if (host.IsOld)
+                return string.Format("Too old ({0} hours)", host.Age);
+            //if (host.LastChangeTime
+            if (string.IsNullOrEmpty(host.Owner))
+                return "Unowned";
+            return string.Format("Owned by {0}", host.Owner);
         }
     }
 }

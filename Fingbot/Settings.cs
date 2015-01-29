@@ -20,5 +20,15 @@ namespace Fingbot
 
         [DataMember]
         public string FingArgs { get; set; }
+
+        [DataMember]
+        public double MaxAge { get; set; }
+
+        [OnDeserialized]
+        private void Setup(StreamingContext e)
+        {
+            if (MaxAge == 0.0)
+                MaxAge = 12;
+        }
     }
 }

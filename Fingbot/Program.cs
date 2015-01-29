@@ -75,7 +75,7 @@ namespace Fingbot
             {
                 Singleton<NetworkData>.Instance.Refresh();
                 var message = e.Data as Message;
-                if (message.Hidden != null && Boolean.Parse(message.Hidden))
+                if (message.Hidden)
                     return;
                 Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
 
@@ -98,9 +98,12 @@ namespace Fingbot
                     LastHost = host;
                     return;
                 }
+                /* ****
+                 * That's my Something
+                 * ****/
                 var pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+That's (?<Owner>a|my|the|(@[?<un>\w]+)'s) (?<Type>\w+)?"), 
+                    string.Concat("@", instance.Self.Name, @":?\s+That's (?<Owner>a|my|the|(?<un>@[\w]+)'s) (?<Type>\w+)?"), 
                     RegexOptions.IgnoreCase);
                 if (pmatch.Success)
                 {
@@ -127,6 +130,31 @@ namespace Fingbot
                     }
                     instance.SendMessage(message.Channel, string.Format("Ok. {0} is {1}'s {2}.  I'll keep that in mind :simple_smile:", LastHost.FriendlyName, LastHost.Owner, LastHost.Type));
                     Singleton<NetworkData>.Instance.Save();
+                }
+                /* ****
+                 * How long has it been here.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+How long (has|is|was)? (it)? been t?here"),
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    instance.SendMessage(message.Channel, String.Format("{0} hours.", LastHost.Age));
+                }
+
+                /* ****
+                 * Training Time.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+Training time"),
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    var host = Singleton<NetworkData>.Instance.PickIncompleteHost();
+                    (sender as Slack).SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
+                    LastHost = host;
                 }
             }
         }

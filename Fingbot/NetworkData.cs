@@ -26,6 +26,7 @@ namespace Fingbot
 
         public Host PickIncompleteHost()
         {
+            KnownHosts.Sort(SortRandom);
             foreach (var host in KnownHosts)
             {
                 if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
@@ -62,7 +63,7 @@ namespace Fingbot
         public void Save()
         {
             Serialization.WriteObject("Hosts.json", KnownHosts);
-        }
+         }
 
         private void Merge(Host host, XElement data)
         {
@@ -78,11 +79,14 @@ namespace Fingbot
                 {
                     prop.SetValue(host, key.Value, null);
                 }
+                if (prop.Name == "LastChangeTime") // Override this one every time.
+                    prop.SetValue(host, key.Value, null);
             }
         }
 
         internal Host PickCertainHost()
         {
+            KnownHosts.Sort(SortRandom);
             foreach (var host in KnownHosts)
             {
                 if (string.IsNullOrWhiteSpace(host.Owner))
@@ -98,6 +102,11 @@ namespace Fingbot
             }
             return null;
 
+        }
+
+        private int SortRandom(Host x, Host y)
+        {
+            return Singleton<Random>.Instance.Next(-1, 1);
         }
     }
 }

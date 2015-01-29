@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Kamahl.Common;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -6,7 +7,7 @@ using System.Text;
 
 namespace Fingbot
 {
-    [DataContract(Namespace="")]
+    [DataContract(Namespace = "")]
     class Host
     {
         [DataMember]
@@ -16,16 +17,16 @@ namespace Fingbot
         public string Hostname { get; set; }
 
         [DataMember]
-        public string HardwareAddress{ get; set; }
+        public string HardwareAddress { get; set; }
 
         [DataMember]
-        public string Address{ get; set; }
+        public string Address { get; set; }
 
         [DataMember]
-        public string Vendor{ get; set; }
+        public string Vendor { get; set; }
 
         [DataMember]
-        public string State{ get; set; }
+        public string State { get; set; }
 
         [DataMember]
         public string LastChangeTime { get; set; }
@@ -39,7 +40,7 @@ namespace Fingbot
         [DataMember]
         public bool IsFixture { get; set; }
 
-        public object FriendlyName
+        public string FriendlyName
         {
             get
             {
@@ -47,6 +48,8 @@ namespace Fingbot
                     return Name;
                 if (!string.IsNullOrWhiteSpace(Hostname))
                     return Hostname;
+                if (!string.IsNullOrEmpty(Vendor))
+                    return String.Format("{0} ({1})", HardwareAddress, Vendor);
                 return HardwareAddress;
             }
         }
@@ -58,6 +61,19 @@ namespace Fingbot
                 if (LastChangeTime == null)
                     //LastChangeTime = this.FirstSeen;
                     return false;
-            return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalDays > 2; } set { } }
+                return Age > Singleton<Settings>.Instance.MaxAge;
+            }
+        }
+        [DataMember]
+        public double Age
+        {
+            get
+            {
+                if (LastChangeTime == null)
+                    LastChangeTime = DateTime.Now.ToShortDateString();
+                return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalHours;
+            }
+            set { }
+        }
     }
 }

@@ -4,6 +4,8 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
 using System.Xml.Linq;
+using System.Threading.Tasks;
+using System.Net;
 
 namespace Fingbot
 {
@@ -17,9 +19,15 @@ namespace Fingbot
             var fing = Process.GetProcessesByName("fing");
             if (fing.Length == 0)
             {
+                try{
                 Process.Start("fing", PersistentSingleton<Settings>.Instance.FingArgs);
                 if (string.IsNullOrEmpty(PersistentSingleton<Settings>.Instance.FingArgs))
                     PersistentSingleton<Settings>.Dirty();
+                }
+                catch(System.IO.FileNotFoundException)
+                {
+                    Console.WriteLine("WARNING: Fing not Installed!");
+                }
 
             }
         }
@@ -82,6 +90,20 @@ namespace Fingbot
                 if (prop.Name == "LastChangeTime") // Override this one every time.
                     prop.SetValue(host, key.Value, null);
             }
+            if (string.IsNullOrEmpty(host.Vendor))
+                new TaskFactory().StartNew(new Action<object>(LookupVendor), host);
+        }
+
+        private void LookupVendor(object state)
+        {
+            Host host = state as Host;
+            if (host == null)
+                return;
+            WebClient wc = new WebClient();
+            var data = wc.DownloadString(string.Format("http://www.macvendorlookup.com/api/v2/{0}", host.HardwareAddress));
+            var json = Newtonsoft.Json.Linq.JArray.Parse(data);
+            host.Vendor = json[0]["company"].ToString();
+
         }
 
         internal Host PickCertainHost()

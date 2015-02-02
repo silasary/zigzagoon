@@ -3,6 +3,7 @@ using SlackRTM;
 using SlackRTM.Events;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Linq;
 using System.Net;
 using System.Text;
@@ -13,9 +14,12 @@ namespace Fingbot
 {
     class Program
     {
-        
+        static bool Running;
         static void Main(string[] args)
         {
+            string confdir;
+            Directory.CreateDirectory(confdir= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
+            Environment.CurrentDirectory = confdir;
             PersistentSingleton<Settings>.SavePath = "config.json";
             var settings = PersistentSingleton<Settings>.Instance;
 
@@ -40,8 +44,8 @@ namespace Fingbot
             } while (Authed == false);
             Console.WriteLine("Connecting...");
             slack.Connect();
-
-            bool Running = true;
+            Running = true;
+            
             int attempts = 0;
             while (Running)
             {
@@ -67,13 +71,14 @@ namespace Fingbot
         static void slack_OnEvent(object sender, SlackEventArgs e)
         {
             var instance = sender as Slack;
+            var network = Singleton<NetworkData>.Instance;
             if (e.Data.Type == "hello")
             {
                 Console.WriteLine("Connected.");
             }
             if (e.Data is Message)
             {
-                Singleton<NetworkData>.Instance.Refresh();
+                network.Refresh();
                 var message = e.Data as Message;
                 if (message.Hidden)
                     return;
@@ -155,6 +160,34 @@ namespace Fingbot
                     var host = Singleton<NetworkData>.Instance.PickIncompleteHost();
                     (sender as Slack).SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
                     LastHost = host;
+                }
+
+                /* ****
+                 * Debug.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+Debug"),
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    foreach (var host in network.AllHosts)
+                    {
+                        instance.SendMessage(message.Channel, String.Format("{0}: {1}", host.FriendlyName, network.Status(host)));
+                    }
+
+                }
+                /* ****
+                 * Restart.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+Restart"),
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    instance.SendMessage(message.Channel, "Rebooting!");
+                    Running = false;
                 }
             }
         }

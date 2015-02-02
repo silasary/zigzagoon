@@ -29,6 +29,14 @@ namespace Fingbot
         {
             if (MaxAge == 0.0)
                 MaxAge = 12;
+            if (string.IsNullOrEmpty(FingArgs))
+                FingArgs = "--session data.dat -o table,xml,fing.xml -o table,csv,console";
+            if (string.IsNullOrEmpty(FingXml))
+                FingXml = "fing.xml";
+        }
+        public Settings()
+        {
+            Setup(new StreamingContext(StreamingContextStates.Other));
         }
     }
 }

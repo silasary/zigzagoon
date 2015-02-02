@@ -69,8 +69,8 @@ namespace Fingbot
         {
             get
             {
-                if (LastChangeTime == null)
-                    LastChangeTime = DateTime.Now.ToShortDateString();
+                if (String.IsNullOrWhiteSpace(LastChangeTime))
+                    LastChangeTime = DateTime.Now.ToString();
                 return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalHours;
             }
             set { }

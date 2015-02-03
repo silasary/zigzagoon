@@ -125,6 +125,12 @@ namespace Fingbot
                             LastHost.Owner = instance.GetUser(message.User).Name;
                             break;
                         case "a":
+                            if (string.IsNullOrEmpty(LastHost.Owner))
+                            {
+                                LastHost.Owner = "ADB";
+                                //LastHost.IsFixture = true;
+                            }
+                            break;
                         case "the":
                             LastHost.Owner = "ADB";
                             LastHost.IsFixture = true;

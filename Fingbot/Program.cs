@@ -195,6 +195,24 @@ namespace Fingbot
                     instance.SendMessage(message.Channel, "Rebooting!");
                     Running = false;
                 }
+                /* ****
+                 * WOL.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+Wake (?<name>\w+)"),
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    LastHost = network.Find(pmatch.Groups["name"].Value);
+
+                    instance.SendMessage(message.Channel, string.Format("Waking {0}!", LastHost.FriendlyName));
+                    WOL.WakeOnLan(LastHost.HardwareAddress);
+                    Running = false;
+                }
+
+
+
             }
         }
 

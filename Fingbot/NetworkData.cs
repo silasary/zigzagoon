@@ -26,7 +26,7 @@ namespace Fingbot
                 if (string.IsNullOrEmpty(PersistentSingleton<Settings>.Instance.FingArgs))
                     PersistentSingleton<Settings>.Dirty();
                 }
-                catch(System.IO.FileNotFoundException)
+                catch(System.ComponentModel.Win32Exception)
                 {
                     Console.WriteLine("WARNING: Fing not Installed!");
                 }
@@ -150,6 +150,11 @@ namespace Fingbot
             if (string.IsNullOrEmpty(host.Owner))
                 return "Unowned";
             return string.Format("Owned by {0}", host.Owner);
+        }
+
+        internal Host Find(string p)
+        {
+            return AllHosts.FirstOrDefault(n => n.Name == p || n.Hostname == p || n.HardwareAddress == p);
         }
     }
 }

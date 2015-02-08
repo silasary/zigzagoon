@@ -173,13 +173,16 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Debug"),
+                    string.Concat("@", instance.Self.Name, @":?\s+Debug (?<online>online)?"),
                     RegexOptions.IgnoreCase);
                 if (pmatch.Success)
                 {
+                    bool online = !string.IsNullOrEmpty(pmatch.Groups["online"].Value);
                     foreach (var host in network.AllHosts)
                     {
-                        instance.SendMessage(message.Channel, String.Format("{0}: {1}", host.FriendlyName, network.Status(host)));
+                        if  (online && host.State == "down")
+                            continue;
+                        instance.SendMessage(message.Channel, String.Format("{0}: {1} ({2})", host.FriendlyName, network.Status(host), host.Age));
                     }
 
                 }
@@ -210,6 +213,7 @@ namespace Fingbot
                     WOL.WakeOnLan(LastHost.HardwareAddress);
                     Running = false;
                 }
+
 
 
 

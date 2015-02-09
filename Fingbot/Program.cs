@@ -214,6 +214,21 @@ namespace Fingbot
                     Running = false;
                 }
 
+                /* ****
+                 * Ignore.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    string.Concat("@", instance.Self.Name, @":?\s+ignore that"),
+                    RegexOptions.IgnoreCase);
+                if (pmatch.Success)
+                {
+                    instance.SendMessage(message.Channel, string.Format("Setting {0} to a fixture.", LastHost.FriendlyName));
+                    LastHost.IsFixture = true;
+                    network.Save();
+                    Running = false;
+                }
+
 
 
 

@@ -178,11 +178,17 @@ namespace Fingbot
                 if (pmatch.Success)
                 {
                     bool online = !string.IsNullOrEmpty(pmatch.Groups["online"].Value);
+                    int n = 0;
                     foreach (var host in network.AllHosts)
                     {
                         if  (online && host.State == "down")
                             continue;
                         instance.SendMessage(message.Channel, String.Format("{0}: {1} ({2})", host.FriendlyName, network.Status(host), host.Age));
+                        if (n++ == 10)
+                        {
+                            n = 0;
+                            Thread.Sleep(1000);
+                        }
                     }
 
                 }

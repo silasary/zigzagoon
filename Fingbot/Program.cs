@@ -173,7 +173,7 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Debug (?<online>online)?"),
+                    string.Concat("@", instance.Self.Name, @":?\s+Debug ?(?<online>online)?"),
                     RegexOptions.IgnoreCase);
                 if (pmatch.Success)
                 {

@@ -179,17 +179,19 @@ namespace Fingbot
                 {
                     bool online = !string.IsNullOrEmpty(pmatch.Groups["online"].Value);
                     int n = 0;
+                    var sb = new StringBuilder();
                     foreach (var host in network.AllHosts)
                     {
                         if  (online && host.State == "down")
                             continue;
-                        instance.SendMessage(message.Channel, String.Format("{0}: {1} ({2})", host.FriendlyName, network.Status(host), host.Age));
+                        sb.AppendFormat("{0}: {1} ({2})", host.FriendlyName, network.Status(host), host.Age).AppendLine();
                         if (n++ == 10)
                         {
                             n = 0;
-                            Thread.Sleep(1000);
+                            //Thread.Sleep(1000);
                         }
                     }
+                    instance.SendMessage(message.Channel, sb.ToString());
 
                 }
                 /* ****

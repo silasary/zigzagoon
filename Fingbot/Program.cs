@@ -72,6 +72,7 @@ namespace Fingbot
         {
             var instance = sender as Slack;
             var network = Singleton<NetworkData>.Instance;
+            LogglyInst.Log(e.Data);
             if (e.Data.Type == "hello")
             {
                 Console.WriteLine("Connected.");
@@ -83,6 +84,10 @@ namespace Fingbot
                 if (message.Hidden)
                     return;
                 Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
+                
+                if (message.User == instance.Self.Id)
+                    return; 
+                
                 bool targeted = message.Text.StartsWith(string.Concat("@", instance.Self.Name));
                 if (message.Channel[0] == 'D')
                     targeted = true;
@@ -166,7 +171,7 @@ namespace Fingbot
                 if (targeted && pmatch.Success)
                 {
                     var host = Singleton<NetworkData>.Instance.PickIncompleteHost();
-                    (sender as Slack).SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
+                    instance.SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
                     LastHost = host;
                 }
 

@@ -201,9 +201,9 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Re(start|boot)"),
+                    @"Re(start|boot)",
                     RegexOptions.IgnoreCase);
-                if (pmatch.Success)
+                if (targeted && pmatch.Success)
                 {
                     instance.SendMessage(message.Channel, "Rebooting!");
                     Running = false;
@@ -221,9 +221,21 @@ namespace Fingbot
 
                     instance.SendMessage(message.Channel, string.Format("Waking {0}!", LastHost.FriendlyName));
                     WOL.WakeOnLan(LastHost.HardwareAddress);
-                    Running = false;
                 }
+                /* ****
+                 * Select.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    @"(Select|Pick|With) (?<name>\w+)",
+                    RegexOptions.IgnoreCase);
+                if (targeted&& pmatch.Success)
+                {
+                    LastHost = network.Find(pmatch.Groups["name"].Value);
 
+                    instance.SendMessage(message.Channel, string.Format("{0}: {1} ({2})", LastHost.FriendlyName, network.Status(LastHost), LastHost.Age));
+                    WOL.WakeOnLan(LastHost.HardwareAddress);
+                }
                 /* ****
                  * Ignore.
                  * ****/
@@ -237,6 +249,7 @@ namespace Fingbot
                     LastHost.IsFixture = true;
                     network.Save();
                 }
+
 
 
 

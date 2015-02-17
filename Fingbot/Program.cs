@@ -83,7 +83,9 @@ namespace Fingbot
                 if (message.Hidden)
                     return;
                 Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
-
+                bool targeted = message.Text.StartsWith(string.Concat("@", instance.Self.Name));
+                if (message.Channel[0] == 'D')
+                    targeted = true;
                 bool match =
                     message.Text.ToLower().Contains("who's in?") ||
                     message.Text.ToLower().Contains("whos in?") ||
@@ -108,9 +110,9 @@ namespace Fingbot
                  * ****/
                 var pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+That's (?<Owner>a|my|the|(?<un>@[\w]+)'s) (?<Type>\w+)?"), 
+                    @"That's (?<Owner>a|my|the|(?<un>@[\w]+)'s) (?<Type>\w+)?", 
                     RegexOptions.IgnoreCase);
-                if (pmatch.Success)
+                if (targeted && pmatch.Success)
                 {
                     if (LastHost == null)
                     {
@@ -147,9 +149,9 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+How long (has|is|was)? (it)? been t?here"),
+                    @"How (long (has|is|was)? (it)? been t?here|old is it)",
                     RegexOptions.IgnoreCase);
-                if (pmatch.Success)
+                if (targeted && pmatch.Success)
                 {
                     instance.SendMessage(message.Channel, String.Format("{0} hours.", LastHost.Age));
                 }
@@ -159,9 +161,9 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Training time"),
+                    @"Training time",
                     RegexOptions.IgnoreCase);
-                if (pmatch.Success)
+                if (targeted && pmatch.Success)
                 {
                     var host = Singleton<NetworkData>.Instance.PickIncompleteHost();
                     (sender as Slack).SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
@@ -199,7 +201,7 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Restart"),
+                    string.Concat("@", instance.Self.Name, @":?\s+Re(start|boot)"),
                     RegexOptions.IgnoreCase);
                 if (pmatch.Success)
                 {
@@ -227,14 +229,13 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+ignore that"),
+                    @"Ignore (that|it)",
                     RegexOptions.IgnoreCase);
-                if (pmatch.Success)
+                if (targeted && pmatch.Success)
                 {
                     instance.SendMessage(message.Channel, string.Format("Setting {0} to a fixture.", LastHost.FriendlyName));
                     LastHost.IsFixture = true;
                     network.Save();
-                    Running = false;
                 }
 
 

@@ -133,6 +133,26 @@ namespace Fingbot
 
         }
 
+        internal IEnumerable<Host> CertainHosts()
+        {
+            KnownHosts.Sort();
+
+            foreach (var host in KnownHosts)
+            {
+                if (string.IsNullOrWhiteSpace(host.Owner))
+                    continue;
+                if (host.State == "down")
+                    continue;
+                if (host.IsFixture)
+                    continue;
+                if (host.IsOld)
+                    continue;
+
+                yield return host;
+            }
+            yield break;
+        }
+
         private int SortRandom(Host x, Host y)
         {
             return Singleton<Random>.Instance.Next(-1, 1);
@@ -154,7 +174,12 @@ namespace Fingbot
 
         internal Host Find(string p)
         {
-            return AllHosts.FirstOrDefault(n => n.Name == p || n.Hostname == p || n.HardwareAddress == p);
+            return AllHosts.FirstOrDefault(
+                n => 
+                    n.Name.Equals(p, StringComparison.CurrentCultureIgnoreCase) || 
+                    n.Hostname.Equals(p, StringComparison.CurrentCultureIgnoreCase) || 
+                    n.HardwareAddress.Equals(p, StringComparison.CurrentCultureIgnoreCase)
+            );
         }
     }
 }

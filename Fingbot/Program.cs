@@ -98,16 +98,25 @@ namespace Fingbot
                     message.Text.ToLower().Contains("anyone in?");
                 if (match)
                 {
-                    var host = Singleton<NetworkData>.Instance.PickCertainHost();
-                    if (host != null)
-                        (sender as Slack).SendMessage(message.Channel, String.Format("{0}'s {1} '{2}' is here...", host.Owner, host.Type, host.FriendlyName));
-                    else if ((host = Singleton<NetworkData>.Instance.PickIncompleteHost()) != null)
+                    var hosts = Singleton<NetworkData>.Instance.CertainHosts().ToList();
+                    var people = new List<string>();
+                    Host h=null;
+                    foreach (var host in hosts.ToArray())
                     {
-                        (sender as Slack).SendMessage(message.Channel, String.Format("I don't know. But there is a device I don't recognise: {0}", host.FriendlyName));
+                        if (people.Contains(host.Owner))
+                            hosts.Remove(host);
+                        else
+                            people.Add(host.Owner);
+                    }
+                    if (hosts.Count > 0)
+                        instance.SendMessage(message.Channel, string.Format("{0} {1} here.", string.Join(",", hosts.Select(host => String.Format("{0}'s {1} '{2}'", host.Owner, host.Type, host.FriendlyName))), hosts.Count == 1 ? "is" : "are"));
+                    else if ((h = Singleton<NetworkData>.Instance.PickIncompleteHost()) != null)
+                    {
+                        (sender as Slack).SendMessage(message.Channel, String.Format("I don't know. But there is a device I don't recognise: {0}", h.FriendlyName));
                     }
                     else
                         (sender as Slack).SendMessage(message.Channel, "Nobody. It's lonely here :frowning:");
-                    LastHost = host;
+                    LastHost = h;
                     return;
                 }
                 /* ****

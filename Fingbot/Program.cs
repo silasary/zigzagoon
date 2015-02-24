@@ -109,7 +109,7 @@ namespace Fingbot
                             people.Add(host.Owner);
                     }
                     if (hosts.Count > 0)
-                        instance.SendMessage(message.Channel, string.Format("{0} {1} here.", string.Join(",", hosts.Select(host => String.Format("{0}'s {1} '{2}'", host.Owner, host.Type, host.FriendlyName))), hosts.Count == 1 ? "is" : "are"));
+                        instance.SendMessage(message.Channel, string.Format("{0} {1} here.", string.Join(", ", hosts.Select(host => String.Format("{0}'s {1} '{2}'", host.Owner, host.Type, host.FriendlyName))), hosts.Count == 1 ? "is" : "are"));
                     else if ((h = Singleton<NetworkData>.Instance.PickIncompleteHost()) != null)
                     {
                         (sender as Slack).SendMessage(message.Channel, String.Format("I don't know. But there is a device I don't recognise: {0}", h.FriendlyName));
@@ -241,12 +241,16 @@ namespace Fingbot
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
-                    @"(Select|Pick|With) (?<name>\w+)",
+                    @"(Select|Pick|With) (?<name>[\w:]+)",
                     RegexOptions.IgnoreCase);
                 if (targeted&& pmatch.Success)
                 {
                     LastHost = network.Find(pmatch.Groups["name"].Value);
-
+                    if (LastHost == null)
+                    {
+                        instance.SendMessage(message.Channel, "I couldn't find it");
+                        return;
+                    }
                     instance.SendMessage(message.Channel, string.Format("{0}: {1} ({2})", LastHost.FriendlyName, network.Status(LastHost), LastHost.Age));
                     WOL.WakeOnLan(LastHost.HardwareAddress);
                 }

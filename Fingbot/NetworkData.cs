@@ -99,6 +99,8 @@ namespace Fingbot
             }
             if (string.IsNullOrEmpty(host.Vendor))
                 new TaskFactory().StartNew(new Action<object>(LookupVendor), host);
+            if (!string.IsNullOrEmpty(host.Owner) && !host.Owner.StartsWith("@") && host.Owner != "ADB")
+                host.Owner = "@" + host.Owner;
         }
 
         private void LookupVendor(object state)
@@ -135,7 +137,7 @@ namespace Fingbot
 
         internal IEnumerable<Host> CertainHosts()
         {
-            KnownHosts.Sort();
+            //KnownHosts.Sort();
 
             foreach (var host in KnownHosts)
             {
@@ -175,10 +177,10 @@ namespace Fingbot
         internal Host Find(string p)
         {
             return AllHosts.FirstOrDefault(
-                n => 
-                    n.Name.Equals(p, StringComparison.CurrentCultureIgnoreCase) || 
-                    n.Hostname.Equals(p, StringComparison.CurrentCultureIgnoreCase) || 
-                    n.HardwareAddress.Equals(p, StringComparison.CurrentCultureIgnoreCase)
+                n =>
+                    p.Equals(n.Name, StringComparison.CurrentCultureIgnoreCase) ||
+                    p.Equals(n.Hostname, StringComparison.CurrentCultureIgnoreCase) ||
+                    p.Equals(n.HardwareAddress, StringComparison.CurrentCultureIgnoreCase)
             );
         }
     }

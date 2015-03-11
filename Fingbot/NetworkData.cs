@@ -155,6 +155,19 @@ namespace Fingbot
             yield break;
         }
 
+        public IEnumerable<Host> UnknownHosts()
+        {
+            foreach (var host in KnownHosts)
+            {
+                if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
+                    continue;
+                if (host.State == "down")
+                    continue;
+                yield return host;
+            }
+            yield break;
+        }
+
         private int SortRandom(Host x, Host y)
         {
             return Singleton<Random>.Instance.Next(-1, 1);

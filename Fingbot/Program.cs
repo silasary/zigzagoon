@@ -99,6 +99,7 @@ namespace Fingbot
                 if (match)
                 {
                     var hosts = Singleton<NetworkData>.Instance.CertainHosts().ToList();
+                    var unknowns = Singleton<NetworkData>.Instance.UnknownHosts().Count();
                     var people = new List<string>();
                     Host h=null;
                     foreach (var host in hosts.ToArray())
@@ -108,8 +109,12 @@ namespace Fingbot
                         else
                             people.Add(host.Owner);
                     }
+                   
                     if (hosts.Count > 0)
-                        instance.SendMessage(message.Channel, string.Format("{0} {1} here.", string.Join(", ", hosts.Select(host => String.Format("{0}'s {1} '{2}'", host.Owner, host.Type, host.FriendlyName))), hosts.Count == 1 ? "is" : "are"));
+                        instance.SendMessage(message.Channel, string.Format("{0} {1} here. {2}", 
+                            string.Join(", ", hosts.Select(host => String.Format("{0}'s {1} '{2}'", host.Owner, host.Type, host.FriendlyName))), 
+                            hosts.Count == 1 ? "is" : "are",
+                            unknowns > 0 ? string.Format("There are also {0} unknown devices.", unknowns): ""));
                     else if ((h = Singleton<NetworkData>.Instance.PickIncompleteHost()) != null)
                     {
                         (sender as Slack).SendMessage(message.Channel, String.Format("I don't know. But there is a device I don't recognise: {0}", h.FriendlyName));

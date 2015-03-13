@@ -90,6 +90,19 @@ namespace Fingbot
             foreach (var key in data.Elements())
             {
                 var prop = typeof(Host).GetProperties().FirstOrDefault(n => n.Name == key.Name);
+                if (prop.Name == "State")
+                {
+                    prop = typeof(Host).GetProperties().FirstOrDefault(n => n.Name == "RawState");
+                    prop.SetValue(host, key.Value, null);
+                    if (host.State != host.RawState && host.Uncertain)
+                    {
+                        host.State = host.RawState;
+                        host.Uncertain = false;
+                    }
+                    else
+                        host.Uncertain = true;
+                    continue;
+                }
                 if (prop != null && !string.IsNullOrEmpty(key.Value))
                 {
                     prop.SetValue(host, key.Value, null);

@@ -57,7 +57,7 @@ namespace Fingbot
                     if (DateTime.Now.Hour < 10)
                         continue;
                     var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
-                    if (inc != null && LastQuestion.Date != LastQuestion.Date)
+                    if (inc != null && LastQuestion.Date != DateTime.Now.Date)
                     {
                         LastQuestion = DateTime.Now;
                         slack.SendMessage("#botspam", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));

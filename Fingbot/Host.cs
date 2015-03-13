@@ -29,6 +29,9 @@ namespace Fingbot
         public string State { get; set; }
 
         [DataMember]
+        public string RawState { get; set; }
+
+        [DataMember]
         public string LastChangeTime { get; set; }
 
         [DataMember]
@@ -75,5 +78,7 @@ namespace Fingbot
             }
             set { }
         }
+
+        public bool Uncertain { get; set; }
     }
 }

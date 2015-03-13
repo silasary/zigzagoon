@@ -9,6 +9,7 @@ using System.Net;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
 
 namespace Fingbot
 {
@@ -45,7 +46,26 @@ namespace Fingbot
             Console.WriteLine("Connecting...");
             slack.Connect();
             Running = true;
-            
+
+            Task.Factory.StartNew(() =>
+            {
+                DateTime LastQuestion = new DateTime();
+                while (true)
+                {
+                    Singleton<NetworkData>.Instance.Refresh();
+                    Thread.Sleep(new TimeSpan(0, 5, 0));
+                    if (DateTime.Now.Hour < 10)
+                        continue;
+                    var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
+                    if (inc != null && LastQuestion.Date != LastQuestion.Date)
+                    {
+                        LastQuestion = DateTime.Now;
+                        slack.SendMessage("#botspam", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));
+                        LastHost = inc;
+                    }
+                }
+            });
+
             int attempts = 0;
             while (Running)
             {
@@ -185,7 +205,10 @@ namespace Fingbot
                 if (targeted && pmatch.Success)
                 {
                     var host = Singleton<NetworkData>.Instance.PickIncompleteHost();
-                    instance.SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
+                    if (host == null)
+                        instance.SendMessage(message.Channel, "I know everything here.");
+                    else                           
+                        instance.SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
                     LastHost = host;
                 }
 

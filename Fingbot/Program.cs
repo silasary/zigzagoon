@@ -106,9 +106,9 @@ namespace Fingbot
                 Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
                 
                 if (message.User == instance.Self.Id)
-                    return; 
-                
-                bool targeted = message.Text.StartsWith(string.Concat("@", instance.Self.Name));
+                    return;
+
+                bool targeted = SubstituteMarkup(message.Text, sender as Slack).StartsWith(string.Concat("@", instance.Self.Name), StringComparison.InvariantCultureIgnoreCase);
                 if (message.Channel[0] == 'D')
                     targeted = true;
                 bool match =

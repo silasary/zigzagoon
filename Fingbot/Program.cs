@@ -60,7 +60,7 @@ namespace Fingbot
                     if (inc != null && LastQuestion.Date != DateTime.Now.Date)
                     {
                         LastQuestion = DateTime.Now;
-                        slack.SendMessage("#botspam", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));
+                        slack.SendMessage("#chatter", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));
                         LastHost = inc;
                     }
                 }

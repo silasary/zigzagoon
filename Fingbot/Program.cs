@@ -47,24 +47,7 @@ namespace Fingbot
             slack.Connect();
             Running = true;
 
-            Task.Factory.StartNew(() =>
-            {
-                DateTime LastQuestion = new DateTime();
-                while (true)
-                {
-                    Singleton<NetworkData>.Instance.Refresh();
-                    Thread.Sleep(new TimeSpan(0, 5, 0));
-                    if (DateTime.Now.Hour < 10)
-                        continue;
-                    var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
-                    if (inc != null && LastQuestion.Date != DateTime.Now.Date)
-                    {
-                        LastQuestion = DateTime.Now;
-                        slack.SendMessage("#chatter", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));
-                        LastHost = inc;
-                    }
-                }
-            });
+            Task.Factory.StartNew(IdleFunc(slack));
 
             int attempts = 0;
             while (Running)
@@ -86,6 +69,29 @@ namespace Fingbot
                 }
                 Thread.Sleep(1000);
             }
+        }
+
+        private static Action IdleFunc(Slack slack)
+        {
+            return () =>
+            {
+                DateTime LastQuestion = new DateTime();
+                while (true)
+                {
+                    Singleton<NetworkData>.Instance.Refresh();
+                    Thread.Sleep(new TimeSpan(0, 5, 0));
+                    Singleton<Reminders>.Instance.Check(slack);
+                    if (DateTime.Now.Hour < 10)
+                        continue;
+                    var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
+                    if (inc != null && LastQuestion.Date != DateTime.Now.Date)
+                    {
+                        LastQuestion = DateTime.Now;
+                        slack.SendMessage("#chatter", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));
+                        LastHost = inc;
+                    }
+                }
+            };
         }
 
         static void slack_OnEvent(object sender, SlackEventArgs e)
@@ -297,8 +303,20 @@ namespace Fingbot
                 }
 
 
+                /* ****
+                 * Ignore.
+                 * ****/
+                pmatch = Regex.Match(
+                    SubstituteMarkup(message.Text, sender as Slack),
+                    @"Remind (?<Owner>me|(?<un>@[\w]+)) to (?<Text>.+)", 
+                    RegexOptions.IgnoreCase);
+                if (targeted && pmatch.Success)
+                {
+                    var target = instance.GetUser(pmatch.Groups["un"].Success ? pmatch.Groups["un"].Value : message.User);
+                    instance.SendMessage(message.Channel, string.Format("Ok. I'll remind {0} next time {1} in.", target.Name, "they're"));
+                    Singleton<Reminders>.Instance.Add(target, pmatch.Groups["Text"].Value);
 
-
+                }
 
             }
         }

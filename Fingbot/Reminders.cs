@@ -22,10 +22,12 @@ namespace Fingbot
             var whosin = Singleton<NetworkData>.Instance.CertainHosts().Select(h => h.Owner).Distinct();
             foreach (var item in Notes.ToArray())
             {
-                if (whosin.Contains(item.Who))
+                var who = slack.GetUser(item.Who);
+                var name = "@" + who.Name;
+                if (whosin.Contains(name, System.StringComparer.CurrentCultureIgnoreCase))
                 {
-                    var who = slack.GetUser(item.Who);
-                    slack.SendMessage("@" + who.Name, "Reminder: " + item.Text);
+                    
+                    slack.SendMessage(name, "Reminder: " + item.Text);
                     Notes.Remove(item);
                 }
             }

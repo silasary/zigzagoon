@@ -26,8 +26,13 @@ namespace Fingbot
                 var name = "@" + who.Name;
                 if (whosin.Contains(name, System.StringComparer.CurrentCultureIgnoreCase))
                 {
-                    
-                    slack.SendMessage(name, "Reminder: " + item.Text);
+                    var im = slack.Ims.FirstOrDefault(i => i.Name == who.Id);
+                    if (im == null)
+                    {
+                        continue;
+                        //im = slack.OpenIm(who.Id);
+                    }
+                    slack.SendMessage(im.Id, "Reminder: " + item.Text);
                     Notes.Remove(item);
                 }
             }

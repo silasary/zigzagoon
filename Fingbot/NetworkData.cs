@@ -15,6 +15,8 @@ namespace Fingbot
 
         public Host[] AllHosts { get { return KnownHosts.ToArray(); } }
 
+        public ZeroConfClient Bonjour;
+
         public NetworkData()
         {
             KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? new List<Host>();
@@ -32,6 +34,7 @@ namespace Fingbot
                 }
 
             }
+            Bonjour = new ZeroConfClient(this);
         }
 
         public Host PickIncompleteHost()

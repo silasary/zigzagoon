@@ -22,6 +22,7 @@ namespace Fingbot
             Directory.CreateDirectory(confdir= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
             Environment.CurrentDirectory = confdir;
             PersistentSingleton<Settings>.SavePath = "config.json";
+            PersistentSingleton<Reminders>.SavePath = "reminders.json";
             var settings = PersistentSingleton<Settings>.Instance;
 
             Singleton<NetworkData>.Instance.Refresh();
@@ -80,7 +81,7 @@ namespace Fingbot
                 {
                     Singleton<NetworkData>.Instance.Refresh();
                     Thread.Sleep(new TimeSpan(0, 5, 0));
-                    Singleton<Reminders>.Instance.Check(slack);
+                    PersistentSingleton<Reminders>.Instance.Check(slack);
                     if (DateTime.Now.Hour < 10)
                         continue;
                     var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
@@ -304,7 +305,7 @@ namespace Fingbot
 
 
                 /* ****
-                 * Ignore.
+                 * Reminders.
                  * ****/
                 pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
@@ -314,8 +315,8 @@ namespace Fingbot
                 {
                     var target = instance.GetUser(pmatch.Groups["un"].Success ? pmatch.Groups["un"].Value : message.User);
                     instance.SendMessage(message.Channel, string.Format("Ok. I'll remind {0} next time {1} in.", target.Name, "they're"));
-                    Singleton<Reminders>.Instance.Add(target, pmatch.Groups["Text"].Value);
-                    Singleton<Reminders>.Instance.Check(instance);
+                    PersistentSingleton<Reminders>.Instance.Add(target, pmatch.Groups["Text"].Value);
+                    PersistentSingleton<Reminders>.Instance.Check(instance);
                 }
 
             }

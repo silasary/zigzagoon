@@ -35,6 +35,7 @@ namespace Fingbot
                     Notes.Remove(item);
                 }
             }
+            PersistentSingleton<Reminders>.Dirty();
         }
 
         private struct Reminder

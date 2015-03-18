@@ -315,7 +315,7 @@ namespace Fingbot
                     var target = instance.GetUser(pmatch.Groups["un"].Success ? pmatch.Groups["un"].Value : message.User);
                     instance.SendMessage(message.Channel, string.Format("Ok. I'll remind {0} next time {1} in.", target.Name, "they're"));
                     Singleton<Reminders>.Instance.Add(target, pmatch.Groups["Text"].Value);
-
+                    Singleton<Reminders>.Instance.Check(instance);
                 }
 
             }

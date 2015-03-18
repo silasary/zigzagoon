@@ -29,8 +29,7 @@ namespace Fingbot
                     var im = slack.Ims.FirstOrDefault(i => i.Name == who.Id);
                     if (im == null)
                     {
-                        continue;
-                        //im = slack.OpenIm(who.Id);
+                        im = who.OpenIm();
                     }
                     slack.SendMessage(im.Id, "Reminder: " + item.Text);
                     Notes.Remove(item);

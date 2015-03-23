@@ -77,6 +77,7 @@ namespace Fingbot
             return () =>
             {
                 DateTime LastQuestion = new DateTime();
+                bool AskInChatter=false;
                 while (true)
                 {
                     Singleton<NetworkData>.Instance.Refresh();
@@ -88,7 +89,8 @@ namespace Fingbot
                     if (inc != null && LastQuestion.Date != DateTime.Now.Date)
                     {
                         LastQuestion = DateTime.Now;
-                        slack.SendMessage("#chatter", String.Format("Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName));
+                        slack.SendMessage(AskInChatter ? "#chatter":"#botspam", "Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName);
+                        AskInChatter = !AskInChatter;
                         LastHost = inc;
                     }
                 }

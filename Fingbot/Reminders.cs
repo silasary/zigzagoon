@@ -1,5 +1,6 @@
 ﻿using Kamahl.Common;
 using SlackRTM;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
@@ -19,23 +20,30 @@ namespace Fingbot
 
         internal void Check(Slack slack)
         {
-            var whosin = Singleton<NetworkData>.Instance.CertainHosts().Select(h => h.Owner).Distinct();
-            foreach (var item in Notes.ToArray())
+            try
             {
-                var who = slack.GetUser(item.Who);
-                var name = "@" + who.Name;
-                if (whosin.Contains(name, System.StringComparer.CurrentCultureIgnoreCase))
+                var whosin = Singleton<NetworkData>.Instance.CertainHosts().Select(h => h.Owner).Distinct();
+                foreach (var item in Notes.ToArray())
                 {
-                    var im = slack.Ims.FirstOrDefault(i => i.Name == who.Id);
-                    if (im == null)
+                    var who = slack.GetUser(item.Who);
+                    var name = "@" + who.Name;
+                    if (whosin.Contains(name, System.StringComparer.CurrentCultureIgnoreCase))
                     {
-                        im = who.OpenIm();
+                        var im = slack.Ims.FirstOrDefault(i => i.Name == who.Id);
+                        if (im == null)
+                        {
+                            im = who.OpenIm();
+                        }
+                        slack.SendMessage(im.Id, "Reminder: " + item.Text);
+                        Notes.Remove(item);
                     }
-                    slack.SendMessage(im.Id, "Reminder: " + item.Text);
-                    Notes.Remove(item);
                 }
+                PersistentSingleton<Reminders>.Dirty();
             }
-            PersistentSingleton<Reminders>.Dirty();
+            catch (Exception c)
+            {
+                Console.WriteLine(c);
+            }
         }
 
         private struct Reminder

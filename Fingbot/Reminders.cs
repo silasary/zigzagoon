@@ -19,7 +19,7 @@ namespace Fingbot
         }
 
         internal void Check(Slack slack)
-        {
+       {
             try
             {
                 var whosin = Singleton<NetworkData>.Instance.CertainHosts().Select(h => h.Owner).Distinct();

@@ -1,4 +1,5 @@
-﻿using Kamahl.Common;
+﻿using Fingbot.Commands;
+using Kamahl.Common;
 using SlackRTM;
 using SlackRTM.Events;
 using System;
@@ -16,6 +17,16 @@ namespace Fingbot
     class Program
     {
         static bool Running;
+        static List<ICommand> Commands = new List<ICommand>() 
+        { 
+            new WhosInCommand(),
+            new ThatsMyCommand(),
+            new HowOldIsThatCommand(),
+            new TrainingCommand(),
+            new SelectCommand(),
+            new IgnoreThatCommand(),
+            new WakeOnCommand()
+        };
         static void Main(string[] args)
         {
             string confdir;
@@ -24,7 +35,6 @@ namespace Fingbot
             PersistentSingleton<Settings>.SavePath = "config.json";
             PersistentSingleton<Reminders>.SavePath = "reminders.json";
             var settings = PersistentSingleton<Settings>.Instance;
-
             Singleton<NetworkData>.Instance.Refresh();
             var missing = Singleton<NetworkData>.Instance.PickIncompleteHost();
             Singleton<NetworkData>.Instance.Save();
@@ -81,8 +91,12 @@ namespace Fingbot
                 while (true)
                 {
                     Singleton<NetworkData>.Instance.Refresh();
-                    Thread.Sleep(new TimeSpan(0, 5, 0));
-                    PersistentSingleton<Reminders>.Instance.Check(slack);
+                    try
+                    {
+                        PersistentSingleton<Reminders>.Instance.Check(slack);
+                    }
+                    catch (Exception)
+                    { }
                     if (DateTime.Now.Hour < 10)
                         continue;
                     var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
@@ -94,8 +108,9 @@ namespace Fingbot
                         askchannel++;
                         if (askchannel == slack.JoinedChannels.Count())
                             askchannel = 0;
-                        LastHost = inc;
+                        slack.SetLastHost(inc);
                     }
+                    Thread.Sleep(new TimeSpan(0, 5, 0));
                 }
             };
         }
@@ -115,7 +130,8 @@ namespace Fingbot
                 var message = e.Data as Message;
                 if (message.Hidden)
                     return;
-                Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
+                var substMessage = SubstituteMarkup(message.ToString(), sender as Slack);
+                Console.WriteLine(substMessage);
                 
                 if (message.User == instance.Self.Id)
                     return;
@@ -123,106 +139,15 @@ namespace Fingbot
                 bool targeted = SubstituteMarkup(message.Text, sender as Slack).StartsWith(string.Concat("@", instance.Self.Name), StringComparison.InvariantCultureIgnoreCase);
                 if (message.Channel[0] == 'D')
                     targeted = true;
-                bool match =
-                    message.Text.ToLower().Contains("who's in?") ||
-                    message.Text.ToLower().Contains("whos in?") ||
-                    message.Text.ToLower().Contains("anybody in?") ||
-                    message.Text.ToLower().Contains("anyone in?");
-                if (match)
+
+                foreach (var cmd in Commands)
                 {
-                    var hosts = Singleton<NetworkData>.Instance.CertainHosts().ToList();
-                    var unknowns = Singleton<NetworkData>.Instance.UnknownHosts().Count();
-                    var people = new List<string>();
-                    Host h=null;
-                    foreach (var host in hosts.ToArray())
-                    {
-                        if (people.Contains(host.Owner))
-                            hosts.Remove(host);
-                        else
-                            people.Add(host.Owner);
-                    }
-                   
-                    if (hosts.Count > 0)
-                        instance.SendMessage(message.Channel, string.Format("{0} {1} here. {2}", 
-                            string.Join(", ", hosts.Select(host => String.Format("{0}'s {1} '{2}'", host.Owner, host.Type, host.FriendlyName))), 
-                            hosts.Count == 1 ? "is" : "are",
-                            unknowns > 0 ? string.Format("There are also {0} unknown devices.", unknowns): ""));
-                    else if ((h = Singleton<NetworkData>.Instance.PickIncompleteHost()) != null)
-                    {
-                        (sender as Slack).SendMessage(message.Channel, String.Format("I don't know. But there is a device I don't recognise: {0}", h.FriendlyName));
-                    }
-                    else
-                        (sender as Slack).SendMessage(message.Channel, "Nobody. It's lonely here :frowning:");
-                    LastHost = h;
-                    return;
-                }
-                /* ****
-                 * That's my Something
-                 * ****/
-                var pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"That's (?<Owner>a|my|the|(?<un>@[\w]+)'s) (?<Type>\w+)?", 
-                    RegexOptions.IgnoreCase);
-                if (targeted && pmatch.Success)
-                {
-                    if (LastHost == null)
-                    {
-                        instance.SendMessage(message.Channel,  String.Format("@{0}: I have no idea what you're talking about.", message.User));
+                    bool fired = cmd.Run(substMessage, message, targeted, instance);
+                    if (fired)
                         return;
-                    }
-                    LastHost.Type = pmatch.Groups["Type"].Value;
-                    var Owner = pmatch.Groups["Owner"].Value;
-                    switch (Owner)
-                    {
-                        case "my":
-                            LastHost.Owner = instance.GetUser(message.User).Name;
-                            break;
-                        case "a":
-                            if (string.IsNullOrEmpty(LastHost.Owner))
-                            {
-                                LastHost.Owner = "ADB";
-                                //LastHost.IsFixture = true;
-                            }
-                            break;
-                        case "the":
-                            LastHost.Owner = "ADB";
-                            LastHost.IsFixture = true;
-                            break;
-                        default:
-                            LastHost.Owner = pmatch.Groups["un"].Value;
-                            break;
-                    }
-                    instance.SendMessage(message.Channel, string.Format("Ok. {0} is {1}'s {2}.  I'll keep that in mind :simple_smile:", LastHost.FriendlyName, LastHost.Owner, LastHost.Type));
-                    Singleton<NetworkData>.Instance.Save();
-                }
-                /* ****
-                 * How long has it been here.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"How (long (has|is|was)? (it)? been t?here|old is it)",
-                    RegexOptions.IgnoreCase);
-                if (targeted && pmatch.Success)
-                {
-                    instance.SendMessage(message.Channel, String.Format("{0} hours.", LastHost.Age));
                 }
 
-                /* ****
-                 * Training Time.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"Training time",
-                    RegexOptions.IgnoreCase);
-                if (targeted && pmatch.Success)
-                {
-                    var host = Singleton<NetworkData>.Instance.PickIncompleteHost();
-                    if (host == null)
-                        instance.SendMessage(message.Channel, "I know everything here.");
-                    else                           
-                        instance.SendMessage(message.Channel, String.Format("Do you recognise '{0}'?", host.FriendlyName));
-                    LastHost = host;
-                }
+                Match pmatch;
 
                 /* ****
                  * Debug.
@@ -262,51 +187,7 @@ namespace Fingbot
                     instance.SendMessage(message.Channel, "Rebooting!");
                     Running = false;
                 }
-                /* ****
-                 * WOL.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Wake (?<name>\w+)"),
-                    RegexOptions.IgnoreCase);
-                if (pmatch.Success)
-                {
-                    LastHost = network.Find(pmatch.Groups["name"].Value);
-
-                    instance.SendMessage(message.Channel, string.Format("Waking {0}!", LastHost.FriendlyName));
-                    WOL.WakeOnLan(LastHost.HardwareAddress);
-                }
-                /* ****
-                 * Select.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"(Select|Pick|With) (?<name>[\w:]+)",
-                    RegexOptions.IgnoreCase);
-                if (targeted&& pmatch.Success)
-                {
-                    LastHost = network.Find(pmatch.Groups["name"].Value);
-                    if (LastHost == null)
-                    {
-                        instance.SendMessage(message.Channel, "I couldn't find it");
-                        return;
-                    }
-                    instance.SendMessage(message.Channel, string.Format("{0}: {1} ({2})", LastHost.FriendlyName, network.Status(LastHost), LastHost.Age));
-                    WOL.WakeOnLan(LastHost.HardwareAddress);
-                }
-                /* ****
-                 * Ignore.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"Ignore (that|it)",
-                    RegexOptions.IgnoreCase);
-                if (targeted && pmatch.Success)
-                {
-                    instance.SendMessage(message.Channel, string.Format("Setting {0} to a fixture.", LastHost.FriendlyName));
-                    LastHost.IsFixture = true;
-                    network.Save();
-                }
+                
 
 
                 /* ****
@@ -349,7 +230,5 @@ namespace Fingbot
                 return match.Groups[0].Value;
             });
         }
-
-        public static Host LastHost { get; set; }
     }
 }

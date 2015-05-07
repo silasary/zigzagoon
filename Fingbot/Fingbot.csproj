@@ -94,13 +94,22 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\HowOldIsThatCommand.cs" />
+    <Compile Include="Commands\IgnoreThatCommand.cs" />
+    <Compile Include="Commands\SelectCommand.cs" />
+    <Compile Include="Commands\ThatsMyCommand.cs" />
+    <Compile Include="Commands\TrainingCommand.cs" />
+    <Compile Include="Commands\WakeOnCommand.cs" />
+    <Compile Include="Commands\WhosInCommand.cs" />
     <Compile Include="Host.cs" />
+    <Compile Include="ICommand.cs" />
     <Compile Include="LogglyInst.cs" />
     <Compile Include="NetworkData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Reminders.cs" />
     <Compile Include="Settings.cs" />
+    <Compile Include="SlackExtensions.cs" />
     <Compile Include="WakeOnLan.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -130,6 +139,7 @@
       <Install>true</Install>
     </BootstrapperPackage>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

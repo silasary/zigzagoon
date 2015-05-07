@@ -25,7 +25,10 @@ namespace Fingbot
             new TrainingCommand(),
             new SelectCommand(),
             new IgnoreThatCommand(),
-            new WakeOnCommand()
+            new WakeOnCommand(),
+            new DebugCommand(),
+            new RemindMeToCommand(),
+            new HelpCommand()
         };
         static void Main(string[] args)
         {
@@ -158,38 +161,12 @@ namespace Fingbot
                         return;
                 }
 
-                Match pmatch;
+                // Leave this one here for now
 
-                /* ****
-                 * Debug.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    string.Concat("@", instance.Self.Name, @":?\s+Debug ?(?<online>online)?"),
-                    RegexOptions.IgnoreCase);
-                if (pmatch.Success)
-                {
-                    bool online = !string.IsNullOrEmpty(pmatch.Groups["online"].Value);
-                    int n = 0;
-                    var sb = new StringBuilder();
-                    foreach (var host in network.AllHosts)
-                    {
-                        if  (online && host.State == "down")
-                            continue;
-                        sb.AppendFormat("{0}: {1} ({2})", host.FriendlyName, network.Status(host), host.Age).AppendLine();
-                        if (n++ == 10)
-                        {
-                            n = 0;
-                            //Thread.Sleep(1000);
-                        }
-                    }
-                    instance.SendMessage(message.Channel, sb.ToString());
-
-                }
                 /* ****
                  * Restart.
                  * ****/
-                pmatch = Regex.Match(
+                var pmatch = Regex.Match(
                     SubstituteMarkup(message.Text, sender as Slack),
                     @"Re(start|boot)",
                     RegexOptions.IgnoreCase);
@@ -198,24 +175,6 @@ namespace Fingbot
                     instance.SendMessage(message.Channel, "Rebooting!");
                     Running = false;
                 }
-                
-
-
-                /* ****
-                 * Reminders.
-                 * ****/
-                pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"Remind (?<Owner>me|(?<un>@[\w]+)) to (?<Text>.+)", 
-                    RegexOptions.IgnoreCase);
-                if (targeted && pmatch.Success)
-                {
-                    var target = instance.GetUser(pmatch.Groups["un"].Success ? pmatch.Groups["un"].Value : message.User);
-                    instance.SendMessage(message.Channel, string.Format("Ok. I'll remind {0} next time {1} in.", target.Name, "they're"));
-                    PersistentSingleton<Reminders>.Instance.Add(target, pmatch.Groups["Text"].Value);
-                    PersistentSingleton<Reminders>.Instance.Check(instance);
-                }
-
             }
         }
 

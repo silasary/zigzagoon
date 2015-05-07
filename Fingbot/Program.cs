@@ -30,7 +30,7 @@ namespace Fingbot
         static void Main(string[] args)
         {
             string confdir;
-            Directory.CreateDirectory(confdir= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
+            Directory.CreateDirectory(confdir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
             Environment.CurrentDirectory = confdir;
             PersistentSingleton<Settings>.SavePath = "config.json";
             PersistentSingleton<Reminders>.SavePath = "reminders.json";
@@ -38,47 +38,57 @@ namespace Fingbot
             Singleton<NetworkData>.Instance.Refresh();
             var missing = Singleton<NetworkData>.Instance.PickIncompleteHost();
             Singleton<NetworkData>.Instance.Save();
-            var slack = Singleton<Slack>.Instance;
-            slack.OnEvent += slack_OnEvent;
-            bool Authed = false;
-            do
+            var Slacks = settings.Tokens.Select(token => new Slack(token)).ToArray();
+            if (Slacks.Length == 0)
             {
-                if (String.IsNullOrEmpty(settings.Token))
+                Slack slack = new Slack();
+                bool Authed = false;
+                do
                 {
-                    Console.WriteLine("Please obtain a Token, and paste it below:");
-                    settings.Token = Console.ReadLine();
-                    PersistentSingleton<Settings>.Dirty();
-                }
-                Authed = slack.Init(settings.Token);
-                if (!Authed)
-                    settings.Token = "";
+                    if (String.IsNullOrEmpty(settings.Token))
+                    {
+                        Console.WriteLine("Please obtain a Token, and paste it below:");
+                        settings.Token = Console.ReadLine();
+                        PersistentSingleton<Settings>.Dirty();
+                    }
+                    Authed = slack.Init(settings.Token);
+                    if (!Authed)
+                        settings.Token = "";
 
-            } while (Authed == false);
-            Console.WriteLine("Connecting...");
-            slack.Connect();
-            Running = true;
+                } while (Authed == false);
+                Slacks = new Slack[] { slack };
+            }
+            foreach (var slack in Slacks)
+            {
+                slack.OnEvent += slack_OnEvent;
+                Console.WriteLine("Connecting...");
+                slack.Connect();
+                Running = true;
 
-            Task.Factory.StartNew(IdleFunc(slack));
-
+                Task.Factory.StartNew(IdleFunc(slack));
+            }
             int attempts = 0;
             while (Running)
             {
-                if (!slack.Connected)
+                foreach (var slack in Slacks)
                 {
-                    try
+                    if (!slack.Connected)
                     {
-                        Console.WriteLine("Reconnecting...");
-                        slack.Init(settings.Token);
-                        slack.Connect();
-                        attempts = 0;
+                        try
+                        {
+                            Console.WriteLine("Reconnecting...");
+                            slack.Init(settings.Token);
+                            slack.Connect();
+                            attempts = 0;
+                        }
+                        catch (WebException c)
+                        {
+                            Console.WriteLine(c);
+                            Thread.Sleep(new TimeSpan(0, attempts++, 1)); // Longer wait, because something's wrong.
+                        }
                     }
-                    catch (WebException c)
-                    {
-                        Console.WriteLine(c);
-                        Thread.Sleep(new TimeSpan(0, attempts++, 1)); // Longer wait, because something's wrong.
-                    }
+                    Thread.Sleep(1000);
                 }
-                Thread.Sleep(1000);
             }
         }
 
@@ -119,10 +129,11 @@ namespace Fingbot
         {
             var instance = sender as Slack;
             var network = Singleton<NetworkData>.Instance;
-            LogglyInst.Log(e.Data);
+            //LogglyInst.Log(e.Data);
             if (e.Data.Type == "hello")
             {
                 Console.WriteLine("Connected.");
+                
             }
             if (e.Data is Message)
             {

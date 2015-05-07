@@ -64,7 +64,7 @@ namespace Fingbot
                 if (LastChangeTime == null)
                     //LastChangeTime = this.FirstSeen;
                     return false;
-                return Age > Singleton<Settings>.Instance.MaxAge;
+                return Age > PersistentSingleton<Settings>.Instance.MaxAge;
             }
         }
         [DataMember]

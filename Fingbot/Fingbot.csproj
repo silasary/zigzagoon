@@ -94,9 +94,12 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\DebugCommand.cs" />
     <Compile Include="Commands\HelpCommand.cs" />
     <Compile Include="Commands\HowOldIsThatCommand.cs" />
     <Compile Include="Commands\IgnoreThatCommand.cs" />
+    <Compile Include="Commands\RebootCommand.cs" />
+    <Compile Include="Commands\RemindMeToCommand.cs" />
     <Compile Include="Commands\SelectCommand.cs" />
     <Compile Include="Commands\ThatsMyCommand.cs" />
     <Compile Include="Commands\TrainingCommand.cs" />

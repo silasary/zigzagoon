@@ -23,7 +23,7 @@
     <UpdateRequired>false</UpdateRequired>
     <MapFileExtensions>true</MapFileExtensions>
     <InstallUrl>https://dl.dropbox.com/u/4187827/Fingbot/</InstallUrl>
-    <ApplicationRevision>40</ApplicationRevision>
+    <ApplicationRevision>42</ApplicationRevision>
     <ApplicationVersion>1.0.0.%2a</ApplicationVersion>
     <UseApplicationTrust>false</UseApplicationTrust>
     <PublishWizardCompleted>true</PublishWizardCompleted>
@@ -94,6 +94,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Commands\HelpCommand.cs" />
     <Compile Include="Commands\HowOldIsThatCommand.cs" />
     <Compile Include="Commands\IgnoreThatCommand.cs" />
     <Compile Include="Commands\SelectCommand.cs" />

@@ -5,6 +5,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Text.RegularExpressions;
 
 namespace Fingbot.Commands
 {
@@ -13,12 +14,12 @@ namespace Fingbot.Commands
 
         bool ICommand.Run(string MessageText, Message RawMessage, bool IsTargeted, Slack Instance)
         {
-            bool match =
-    MessageText.ToLower().Contains("who's in?") ||
-    MessageText.ToLower().Contains("whos in?") ||
-    MessageText.ToLower().Contains("anybody in?") ||
-    MessageText.ToLower().Contains("anyone in?");
-            if (match)
+            // ’
+            var match = Regex.Match(
+               MessageText,
+               @"(Who['’]?s|(Any|Some)(one|body)) in\?",
+               RegexOptions.IgnoreCase);
+            if (match.Success)
             {
                 var hosts = Singleton<NetworkData>.Instance.CertainHosts().ToList();
                 var unknowns = Singleton<NetworkData>.Instance.UnknownHosts().Count();

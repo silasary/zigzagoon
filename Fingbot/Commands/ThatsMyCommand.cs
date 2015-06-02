@@ -11,9 +11,9 @@ namespace Fingbot.Commands
     {
         bool ICommand.Run(string MessageText, SlackRTM.Events.Message RawMessage, bool IsTargeted, SlackRTM.Slack Instance)
         {
-            /* ****
- * That's my Something
- * ****/
+           /* ****
+            * That's my Something
+            * ****/
             var match = Regex.Match(
                 MessageText,
                 @"That['’]?s (?<Owner>a|my|the|(?<un>@[\w]+)'s) (?<Type>[\w ]+)?",
@@ -22,7 +22,8 @@ namespace Fingbot.Commands
             {
                 if (!IsTargeted)
                 {
-                    //TODO: LastTargetReminder
+                    //TODO: Rate Limit to once per day.
+                    RawMessage.Reply(Instance, "Was that to me?");
                     return true;
                 }
                 var LastHost = Instance.GetLastHost();

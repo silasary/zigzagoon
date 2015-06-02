@@ -30,6 +30,9 @@ namespace Fingbot
         [DataMember]
         private int SettingsVersion;
 
+        [DataMember]
+        public bool HasDoneIntroSpiel { get; set; }
+
         [OnDeserialized]
         private void Setup(StreamingContext e)
         {

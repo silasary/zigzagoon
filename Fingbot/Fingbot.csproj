@@ -98,6 +98,7 @@
     <Compile Include="Commands\HelpCommand.cs" />
     <Compile Include="Commands\HowOldIsThatCommand.cs" />
     <Compile Include="Commands\IgnoreThatCommand.cs" />
+    <Compile Include="Commands\NicknameCommand.cs" />
     <Compile Include="Commands\RebootCommand.cs" />
     <Compile Include="Commands\RemindMeToCommand.cs" />
     <Compile Include="Commands\SelectCommand.cs" />

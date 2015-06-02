@@ -28,7 +28,8 @@ namespace Fingbot
             new WakeOnCommand(),
             new DebugCommand(),
             new RemindMeToCommand(),
-            new HelpCommand()
+            new HelpCommand(),
+            new NicknameCommand(),
         };
         static void Main(string[] args)
         {
@@ -68,7 +69,7 @@ namespace Fingbot
                 slack.Connect();
                 Running = true;
 
-                Task.Factory.StartNew(IdleFunc(slack));
+                new Thread(new ThreadStart(IdleFunc(slack))) { IsBackground = true }.Start();
             }
             int attempts = 0;
             while (Running)

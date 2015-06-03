@@ -68,17 +68,17 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Kamahl.Common, Version=1.0.19.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Kamahl.Common, Version=1.0.20.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Kamahl.Common.1.0.19\lib\net40\Kamahl.Common.dll</HintPath>
+      <HintPath>..\packages\Kamahl.Common.1.0.20\lib\net40\Kamahl.Common.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Newtonsoft.Json.7.0.1-beta2\lib\net40\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1-beta3\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="SlackRTM, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\SlackRTM.1.0.0-CI00020\lib\net40\SlackRTM.dll</HintPath>
+      <HintPath>..\packages\SlackRTM.1.0.0-CI00025\lib\net40\SlackRTM.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -88,9 +88,9 @@
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="System.Data" />
     <Reference Include="System.Xml" />
-    <Reference Include="websocket-sharp, Version=1.0.2.42043, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
+    <Reference Include="websocket-sharp, Version=1.0.2.29252, Culture=neutral, PublicKeyToken=5660b08a1845a91e, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\WebSocketSharp.1.0.3-rc7\lib\websocket-sharp.dll</HintPath>
+      <HintPath>..\packages\WebSocketSharp.1.0.3-rc8\lib\websocket-sharp.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -6,6 +6,7 @@ using System.Linq;
 using System.Xml.Linq;
 using System.Threading.Tasks;
 using System.Net;
+using System.IO;
 
 namespace Fingbot
 {
@@ -77,7 +78,14 @@ namespace Fingbot
 
         public void Save()
         {
-            Serialization.WriteObject("Hosts.json", KnownHosts);
+            try
+            {
+                Serialization.WriteObject("Hosts.json", KnownHosts);
+            }
+            catch (IOException c)
+            {
+                Console.WriteLine("Error writing to disk:\n {0}", c);
+            }
          }
 
         private void Merge(Host host, XElement data)

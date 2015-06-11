@@ -69,7 +69,7 @@ namespace Fingbot
                 slack.Connect();
                 Running = true;
 
-                new Thread(new ThreadStart(IdleFunc(slack))) { IsBackground = true }.Start();
+                new Thread(new ThreadStart(IdleFunc(slack))).Start();
             }
             int attempts = 0;
             while (Running)
@@ -99,6 +99,8 @@ namespace Fingbot
         {
             return () =>
             {
+                Thread.CurrentThread.Name = slack.TeamInfo.Domain +  "_idlefunc";
+                Thread.CurrentThread.IsBackground = true;
                 if (!PersistentSingleton<Settings>.Instance.HasDoneIntroSpiel)
                     Thread.Sleep(TimeSpan.FromMinutes(1));
                 DateTime LastQuestion = new DateTime();
@@ -132,66 +134,73 @@ namespace Fingbot
 
         static void slack_OnEvent(object sender, SlackEventArgs e)
         {
-            var instance = sender as Slack;
-            var network = Singleton<NetworkData>.Instance;
-            //LogglyInst.Log(e.Data);
-            if (e.Data.Type == "hello")
+            try
             {
-                Console.WriteLine("Connected.");
-            var settings = PersistentSingleton<Settings>.Instance;
-
-                if (!settings.HasDoneIntroSpiel)
+                var instance = sender as Slack;
+                var network = Singleton<NetworkData>.Instance;
+                //LogglyInst.Log(e.Data);
+                if (e.Data.Type == "hello")
                 {
-                    var channel = instance.PrimaryChannel.IsMember ? instance.PrimaryChannel : instance.JoinedChannels.FirstOrDefault();
-                    instance.SendMessage(channel, "Hi, I'm {0}!", instance.Self.Name);
-                    instance.SendMessage(channel, 
-                        "I'm here to keep an eye on your building while you're not around.\n" +
-                        "I do this by watching your wifi network. " + 
-                        "I'll keep notes on each device that connects to the wifi, and with your help, be able to work out who's in the building.\n");
-                    instance.SendMessage(channel, "If you ever need me, just ask _Who's in?_ or _Anyone in?_, and I'll let you know.\n" +
-                        "If there's a device I don't recognise, just say _@{0}: That's my iThing_, or _@{0}: That's @somebody's bright pink phone_.\n" +
-                        "I try to work out what belongs here, and try not to ask about the router or printer, but if I ever do, feel free to let me know by saying _@{0}: Ignore that_.", instance.Self.Name);
-                    settings.HasDoneIntroSpiel = true;
-                    PersistentSingleton<Settings>.Dirty();
+                    Console.WriteLine("Connected.");
+                    var settings = PersistentSingleton<Settings>.Instance;
+
+                    if (!settings.HasDoneIntroSpiel)
+                    {
+                        var channel = instance.PrimaryChannel.IsMember ? instance.PrimaryChannel : instance.JoinedChannels.FirstOrDefault();
+                        instance.SendMessage(channel, "Hi, I'm {0}!", instance.Self.Name);
+                        instance.SendMessage(channel,
+                            "I'm here to keep an eye on your building while you're not around.\n" +
+                            "I do this by watching your wifi network. " +
+                            "I'll keep notes on each device that connects to the wifi, and with your help, be able to work out who's in the building.\n");
+                        instance.SendMessage(channel, "If you ever need me, just ask _Who's in?_ or _Anyone in?_, and I'll let you know.\n" +
+                            "If there's a device I don't recognise, just say _@{0}: That's my iThing_, or _@{0}: That's @somebody's bright pink phone_.\n" +
+                            "I try to work out what belongs here, and try not to ask about the router or printer, but if I ever do, feel free to let me know by saying _@{0}: Ignore that_.", instance.Self.Name);
+                        settings.HasDoneIntroSpiel = true;
+                        PersistentSingleton<Settings>.Dirty();
+                    }
+                }
+                if (e.Data is Message)
+                {
+                    network.Refresh();
+                    var message = e.Data as Message;
+                    if (message.Hidden)
+                        return;
+                    var substMessage = SubstituteMarkup(message.ToString(), sender as Slack);
+                    Console.WriteLine(substMessage);
+
+                    if (message.User == instance.Self.Id)
+                        return;
+
+                    bool targeted = SubstituteMarkup(message.Text, sender as Slack).StartsWith(string.Concat("@", instance.Self.Name), StringComparison.InvariantCultureIgnoreCase);
+                    if (message.Channel[0] == 'D')
+                        targeted = true;
+
+                    foreach (var cmd in Commands)
+                    {
+                        bool fired = cmd.Run(substMessage, message, targeted, instance);
+                        if (fired)
+                            return;
+                    }
+
+                    // Leave this one here for now
+
+                    /* ****
+                     * Restart.
+                     * ****/
+                    var pmatch = Regex.Match(
+                        SubstituteMarkup(message.Text, sender as Slack),
+                        @"Re(start|boot)",
+                        RegexOptions.IgnoreCase);
+                    if (targeted && pmatch.Success)
+                    {
+                        instance.SendMessage(message.Channel, "Rebooting!");
+                        Running = false;
+                    }
                 }
             }
-            if (e.Data is Message)
+            catch (Exception c)
             {
-                network.Refresh();
-                var message = e.Data as Message;
-                if (message.Hidden)
-                    return;
-                var substMessage = SubstituteMarkup(message.ToString(), sender as Slack);
-                Console.WriteLine(substMessage);
-                
-                if (message.User == instance.Self.Id)
-                    return;
-
-                bool targeted = SubstituteMarkup(message.Text, sender as Slack).StartsWith(string.Concat("@", instance.Self.Name), StringComparison.InvariantCultureIgnoreCase);
-                if (message.Channel[0] == 'D')
-                    targeted = true;
-
-                foreach (var cmd in Commands)
-                {
-                    bool fired = cmd.Run(substMessage, message, targeted, instance);
-                    if (fired)
-                        return;
-                }
-
-                // Leave this one here for now
-
-                /* ****
-                 * Restart.
-                 * ****/
-                var pmatch = Regex.Match(
-                    SubstituteMarkup(message.Text, sender as Slack),
-                    @"Re(start|boot)",
-                    RegexOptions.IgnoreCase);
-                if (targeted && pmatch.Success)
-                {
-                    instance.SendMessage(message.Channel, "Rebooting!");
-                    Running = false;
-                }
+                Console.WriteLine("!An Error has been caught!\n{0}", c);
             }
         }
 

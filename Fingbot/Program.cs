@@ -33,6 +33,7 @@ namespace Fingbot
         };
         static void Main(string[] args)
         {
+            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             string confdir;
             Directory.CreateDirectory(confdir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
             Environment.CurrentDirectory = confdir;
@@ -95,39 +96,51 @@ namespace Fingbot
             }
         }
 
+        static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
+        {
+            File.WriteAllText("Error.txt", e.Exception.ToString());
+        }
+
         private static Action IdleFunc(Slack slack)
         {
             return () =>
             {
-                Thread.CurrentThread.Name = slack.TeamInfo.Domain +  "_idlefunc";
-                Thread.CurrentThread.IsBackground = true;
-                if (!PersistentSingleton<Settings>.Instance.HasDoneIntroSpiel)
-                    Thread.Sleep(TimeSpan.FromMinutes(1));
-                DateTime LastQuestion = new DateTime();
-                int askchannel =0;
-                while (true)
+                try
                 {
-                    Singleton<NetworkData>.Instance.Refresh();
-                    try
+                    Thread.CurrentThread.Name = slack.TeamInfo.Domain + "_idlefunc";
+                    Thread.CurrentThread.IsBackground = true;
+                    if (!PersistentSingleton<Settings>.Instance.HasDoneIntroSpiel)
+                        Thread.Sleep(TimeSpan.FromMinutes(1));
+                    DateTime LastQuestion = new DateTime();
+                    int askchannel = 0;
+                    while (true)
                     {
-                        PersistentSingleton<Reminders>.Instance.Check(slack);
+                        Singleton<NetworkData>.Instance.Refresh();
+                        try
+                        {
+                            PersistentSingleton<Reminders>.Instance.Check(slack);
+                        }
+                        catch (Exception)
+                        { }
+                        if (DateTime.Now.Hour < 10)
+                            continue;
+                        var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
+                        if (inc != null && LastQuestion.Date != DateTime.Now.Date)
+                        {
+                            LastQuestion = DateTime.Now;
+                            string chan = slack.JoinedChannels.ElementAt(askchannel).Id;
+                            slack.SendMessage(chan, "Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName);
+                            askchannel++;
+                            if (askchannel == slack.JoinedChannels.Count())
+                                askchannel = 0;
+                            slack.SetLastHost(inc);
+                        }
+                        Thread.Sleep(new TimeSpan(0, 5, 0));
                     }
-                    catch (Exception)
-                    { }
-                    if (DateTime.Now.Hour < 10)
-                        continue;
-                    var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
-                    if (inc != null && LastQuestion.Date != DateTime.Now.Date)
-                    {
-                        LastQuestion = DateTime.Now;
-                        string chan = slack.JoinedChannels.ElementAt(askchannel).Id;
-                        slack.SendMessage(chan, "Excuse me, but does anyone recognise '{0}'?", inc.FriendlyName);
-                        askchannel++;
-                        if (askchannel == slack.JoinedChannels.Count())
-                            askchannel = 0;
-                        slack.SetLastHost(inc);
-                    }
-                    Thread.Sleep(new TimeSpan(0, 5, 0));
+                }
+                catch (Exception c)
+                {
+                    Console.WriteLine("!An Error has been caught!\n{0}", c);
                 }
             };
         }

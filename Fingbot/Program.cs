@@ -33,7 +33,7 @@ namespace Fingbot
         };
         static void Main(string[] args)
         {
-            AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            //AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
             string confdir;
             Directory.CreateDirectory(confdir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
             Environment.CurrentDirectory = confdir;

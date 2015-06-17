@@ -68,9 +68,9 @@
     <SignManifests>true</SignManifests>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Kamahl.Common, Version=1.0.20.0, Culture=neutral, processorArchitecture=MSIL">
+    <Reference Include="Kamahl.Common, Version=1.0.21.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\Kamahl.Common.1.0.20\lib\net40\Kamahl.Common.dll</HintPath>
+      <HintPath>..\packages\Kamahl.Common.1.0.21\lib\net40\Kamahl.Common.dll</HintPath>
     </Reference>
     <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>

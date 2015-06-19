@@ -33,7 +33,7 @@ namespace Fingbot.Commands
                 }
                 var oldname = LastHost.FriendlyName;
                 LastHost.Name = match.Groups["Nickname"].Value;
-                RawMessage.Reply(Instance, string.Format("Ok. It'll call {0} {1} from now on.", oldname, LastHost.FriendlyName));
+                RawMessage.Reply(Instance, string.Format("Ok. It'll call {0} \"{1}\" from now on.", oldname, LastHost.FriendlyName));
                 return true;
             }
             match = Regex.Match(
@@ -58,7 +58,7 @@ namespace Fingbot.Commands
                 }
                 var oldname = LastHost.FriendlyName;
                 LastHost.Name = match.Groups["Nickname"].Value;
-                RawMessage.Reply(Instance, string.Format("Ok. It'll call {0} {1} from now on.", oldname, LastHost.FriendlyName));
+                RawMessage.Reply(Instance, string.Format("Ok. It'll call {0} \"{1}\" from now on.", oldname, LastHost.FriendlyName));
                 return true;
             }
             return false;

@@ -70,7 +70,8 @@ namespace Fingbot
                 slack.Connect();
                 Running = true;
 
-                new Thread(new ThreadStart(IdleFunc(slack))).Start();
+                var idlefunc = new Thread(new ThreadStart(IdleFunc(slack)));
+                idlefunc.Start();
             }
             int attempts = 0;
             while (Running)

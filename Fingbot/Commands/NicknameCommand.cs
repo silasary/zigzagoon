@@ -15,7 +15,7 @@ namespace Fingbot.Commands
         {
             var match = Regex.Match(
                 MessageText,
-                @"(Call|Name|Nickname) it (?<Nickname>[\w ]+)?",
+                @"(Call|Name|Nickname) it (?<Nickname>[\w _:]+)?",
                 RegexOptions.IgnoreCase);
             if (match.Success)
             {

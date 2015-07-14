@@ -159,6 +159,7 @@ namespace Fingbot
                 if (!Idlefuncs.ContainsKey(instance) || !Idlefuncs[instance].IsAlive)
                 {
                     Idlefuncs[instance] = new Thread(new ThreadStart(IdleFunc(instance)));
+                    Idlefuncs[instance].Start();
                 }
                 //LogglyInst.Log(e.Data);
                 if (e.Data.Type == "hello")

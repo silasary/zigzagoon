@@ -16,8 +16,8 @@ namespace Fingbot.Commands
              * ****/
             var match = Regex.Match(
                 MessageText,
-                
-                string.Concat("Debug ?((?<online>online)?|(?<mine>mine)|(?<unknown>unknown))"),
+
+                string.Concat("Debug ?((?<online>online)|(?<mine>mine)|(?<unknown>unknown))?"),
                 RegexOptions.IgnoreCase);
             if (!IsTargeted)
                 return false; // No inform here.
@@ -33,7 +33,7 @@ namespace Fingbot.Commands
                 {
                     if (online && host.State == "down")
                         continue;
-                    if (mine && host.Owner != RawMessage.User) // TODO: Utterly broken - Not the same.
+                    if (mine && host.Owner != string.Format("@{0}", Instance.GetUser(RawMessage.User).Name)) // TODO: Utterly broken - Not the same.
                         continue;
                     if (unknown && !string.IsNullOrEmpty(host.Owner))
                         continue;

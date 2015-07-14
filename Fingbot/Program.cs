@@ -31,6 +31,9 @@ namespace Fingbot
             new HelpCommand(),
             new NicknameCommand(),
         };
+
+        static Dictionary<Slack, Thread> Idlefuncs = new Dictionary<Slack, Thread>();
+
         static void Main(string[] args)
         {
             //AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
@@ -70,8 +73,9 @@ namespace Fingbot
                 slack.Connect();
                 Running = true;
 
-                var idlefunc = new Thread(new ThreadStart(IdleFunc(slack)));
-                idlefunc.Start();
+                //var idlefunc = new Thread(new ThreadStart(IdleFunc(slack)));
+                //idlefunc.Start();
+
             }
             int attempts = 0;
             while (Running)
@@ -152,6 +156,10 @@ namespace Fingbot
             {
                 var instance = sender as Slack;
                 var network = Singleton<NetworkData>.Instance;
+                if (!Idlefuncs.ContainsKey(instance) || !Idlefuncs[instance].IsAlive)
+                {
+                    Idlefuncs[instance] = new Thread(new ThreadStart(IdleFunc(instance)));
+                }
                 //LogglyInst.Log(e.Data);
                 if (e.Data.Type == "hello")
                 {

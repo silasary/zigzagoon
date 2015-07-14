@@ -44,7 +44,7 @@ namespace Fingbot
             PersistentSingleton<Reminders>.SavePath = "reminders.json";
             var settings = PersistentSingleton<Settings>.Instance;
             Singleton<NetworkData>.Instance.Refresh();
-            var missing = Singleton<NetworkData>.Instance.PickIncompleteHost();
+            //var missing = Singleton<NetworkData>.Instance.PickIncompleteHost();
             Singleton<NetworkData>.Instance.Save();
             var Slacks = settings.Tokens.Select(token => new Slack(token)).ToArray();
             if (Slacks.Length == 0)
@@ -59,7 +59,8 @@ namespace Fingbot
                         settings.Token = Console.ReadLine();
                         PersistentSingleton<Settings>.Dirty();
                     }
-                    Authed = slack.Init(settings.Token);
+                    slack = new Slack(settings.Token);
+                    Authed = slack.Init();
                     if (!Authed)
                         settings.Token = "";
 

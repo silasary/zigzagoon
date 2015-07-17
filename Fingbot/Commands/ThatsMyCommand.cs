@@ -56,6 +56,10 @@ namespace Fingbot.Commands
                 }
                 Instance.SendMessage(RawMessage.Channel, string.Format("Ok. {0} is {1}'s {2}.  I'll keep that in mind :simple_smile:", LastHost.FriendlyName, LastHost.Owner, LastHost.Type));
                 Singleton<NetworkData>.Instance.Save();
+
+                var another = Singleton<NetworkData>.Instance.PickIncompleteHost();
+                if (another != null)
+                    RawMessage.Reply(Instance, string.Format("Also, do you recognise {0}?", another.FriendlyName),false);
                 return true;
             }
         return false;

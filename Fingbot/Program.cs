@@ -30,6 +30,7 @@ namespace Fingbot
             new RemindMeToCommand(),
             new HelpCommand(),
             new NicknameCommand(),
+            new ConfigCommand(),
         };
 
         static Dictionary<Slack, Thread> Idlefuncs = new Dictionary<Slack, Thread>();
@@ -46,6 +47,7 @@ namespace Fingbot
             Singleton<NetworkData>.Instance.Refresh();
             //var missing = Singleton<NetworkData>.Instance.PickIncompleteHost();
             Singleton<NetworkData>.Instance.Save();
+
             var Slacks = settings.Tokens.Select(token => new Slack(token)).ToArray();
             if (Slacks.Length == 0)
             {

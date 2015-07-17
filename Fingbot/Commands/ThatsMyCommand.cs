@@ -59,7 +59,10 @@ namespace Fingbot.Commands
 
                 var another = Singleton<NetworkData>.Instance.PickIncompleteHost();
                 if (another != null)
-                    RawMessage.Reply(Instance, string.Format("Also, do you recognise {0}?", another.FriendlyName),false);
+                {
+                    RawMessage.Reply(Instance, string.Format("Also, do you recognise {0}?", another.FriendlyName), false);
+                    Instance.SetLastHost(another);
+                }
                 return true;
             }
         return false;

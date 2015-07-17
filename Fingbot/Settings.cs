@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Reflection;
 using System.Runtime.Serialization;
 using System.Text;
 
@@ -56,5 +57,31 @@ namespace Fingbot
         {
             Setup(new StreamingContext(StreamingContextStates.Other));
         }
+
+        #region Indexer
+        private Dictionary<string, PropertyInfo> Props = new Dictionary<string, PropertyInfo>();
+        public object this[string pname]
+        {
+            get
+            {
+                var prop = GetProp(pname);
+                return prop.GetValue(this, null);
+            }
+            set
+            {
+                var prop = GetProp(pname);
+                prop.SetValue(this, value, null);
+            }
+        }
+
+        private PropertyInfo GetProp(string pname)
+        {
+            if (Props==null)
+                Props = new Dictionary<string, PropertyInfo>();
+            if (!Props.ContainsKey(pname))
+                Props[pname] = this.GetType().GetProperties().Single(n => n.Name == pname);
+            return Props[pname];
+        }
+        #endregion
     }
 }

@@ -23,12 +23,13 @@ namespace Fingbot
             var fing = Process.GetProcessesByName("fing");
             if (fing.Length == 0)
             {
-                try{
-                Process.Start("fing", PersistentSingleton<Settings>.Instance.FingArgs);
-                if (string.IsNullOrEmpty(PersistentSingleton<Settings>.Instance.FingArgs))
-                    PersistentSingleton<Settings>.Dirty();
+                try
+                {
+                    Process.Start("fing", PersistentSingleton<Settings>.Instance.FingArgs);
+                    if (string.IsNullOrEmpty(PersistentSingleton<Settings>.Instance.FingArgs))
+                        PersistentSingleton<Settings>.Dirty();
                 }
-                catch(System.ComponentModel.Win32Exception)
+                catch (System.ComponentModel.Win32Exception)
                 {
                     Console.WriteLine("WARNING: Fing not Installed!");
                 }

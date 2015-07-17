@@ -18,7 +18,8 @@ namespace Fingbot
 
         public NetworkData()
         {
-            KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? new List<Host>();
+            KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? Serialization.TryReadObject<List<Host>>("Hosts.Backup.json") ?? new List<Host>();
+            Serialization.WriteObject("Hosts.Backup.json", KnownHosts);
             var fing = Process.GetProcessesByName("fing");
             if (fing.Length == 0)
             {

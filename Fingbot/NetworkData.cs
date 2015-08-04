@@ -48,6 +48,8 @@ namespace Fingbot
                     continue;
                 if (string.IsNullOrEmpty(host.Hostname))
                     continue;
+                if (host.IsFixture)
+                    continue;
                 return host;
             }
             foreach (var host in KnownHosts)
@@ -55,6 +57,8 @@ namespace Fingbot
                 if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
                     continue;
                 if (host.State == "down")
+                    continue;
+                if (host.IsFixture)
                     continue;
                 return host;
             }

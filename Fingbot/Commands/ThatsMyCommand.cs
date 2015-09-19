@@ -16,7 +16,7 @@ namespace Fingbot.Commands
             * ****/
             var match = Regex.Match(
                 MessageText,
-                @"That['’]?s (?<Owner>a|my|the|(?<un>@[\w]+)['’]s) (?<Type>[\w ]+)?(,\s+?(?<Nickname>[\w _:]+))?",
+                @"That['’]?s (?<Owner>a|my|the|(?<un>@[\w-_.]+)['’]s) (?<Type>[\w ]+)?(,\s+?(?<Nickname>[\w _:]+))?",
                 RegexOptions.IgnoreCase);
             if (match.Success)
             {

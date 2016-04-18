@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading;
 
 namespace Fingbot.Commands
 {
@@ -25,7 +26,7 @@ namespace Fingbot.Commands
             {
                 bool online = !string.IsNullOrEmpty(match.Groups["online"].Value);
                 bool mine = !string.IsNullOrEmpty(match.Groups["mine"].Value);
-                bool unknown = !string.IsNullOrEmpty(match.Groups["online"].Value);
+                bool unknown = !string.IsNullOrEmpty(match.Groups["unknown"].Value);
                 int n = 0;
                 var sb = new StringBuilder();
                 NetworkData network = Singleton<NetworkData>.Instance;
@@ -38,9 +39,12 @@ namespace Fingbot.Commands
                     if (unknown && !string.IsNullOrEmpty(host.Owner))
                         continue;
                     sb.AppendFormat("{0}: {1} ({2})", host.FriendlyName, network.Status(host), host.Age).AppendLine();
-                    if (n++ == 10)
+                    if (n++ == 5)
                     {
+                        Instance.SendMessage(RawMessage.Channel, sb.ToString());
                         n = 0;
+                        sb = new StringBuilder();
+                        Thread.Sleep(100);
                     }
                 }
                 Instance.SendMessage(RawMessage.Channel, sb.ToString());

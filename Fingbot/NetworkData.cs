@@ -7,11 +7,15 @@ using System.Xml.Linq;
 using System.Threading.Tasks;
 using System.Net;
 using System.IO;
+using System.Text;
+using System.Net.NetworkInformation;
 
 namespace Fingbot
 {
     internal class NetworkData
     {
+        private IScanner Tool;
+
         private List<Host> KnownHosts;
 
         public Host[] AllHosts { get { return KnownHosts.ToArray(); } }
@@ -20,27 +24,27 @@ namespace Fingbot
         {
             KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? Serialization.TryReadObject<List<Host>>("Hosts.Backup.json") ?? new List<Host>();
             Serialization.WriteObject("Hosts.Backup.json", KnownHosts);
-            var fing = Process.GetProcessesByName("fing");
-            if (fing.Length == 0)
-            {
-                try
-                {
-                    Process.Start("fing", PersistentSingleton<Settings>.Instance.FingArgs);
-                    if (string.IsNullOrEmpty(PersistentSingleton<Settings>.Instance.FingArgs))
-                        PersistentSingleton<Settings>.Dirty();
-                }
-                catch (System.ComponentModel.Win32Exception)
-                {
-                    Console.WriteLine("WARNING: Fing not Installed!");
-                }
 
+            IScanner tool = new Scanners.Fing(KnownHosts);
+            if (tool.IsValidTool())
+            {
+                Tool = tool;
+                return;
             }
+            tool = new Scanners.Nmap(KnownHosts);
+            if (tool.IsValidTool())
+            {
+                Tool = tool;
+                return;
+            }
+            
+            Console.WriteLine("WARNING: No network scanner installed! \n> Please install NMap or Overlook Fing");
         }
 
         public Host PickIncompleteHost()
         {
             KnownHosts.Sort(SortRandom);
-            foreach (var host in KnownHosts)
+            foreach (var host in KnownHosts) // First time, we avoid devices with no known name
             {
                 if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
                     continue;
@@ -52,7 +56,7 @@ namespace Fingbot
                     continue;
                 return host;
             }
-            foreach (var host in KnownHosts)
+            foreach (var host in KnownHosts) // Second time, we will show nameless devices.
             {
                 if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
                     continue;
@@ -67,18 +71,7 @@ namespace Fingbot
 
         public void Refresh()
         {
-            while (!System.IO.File.Exists(PersistentSingleton<Settings>.Instance.FingXml))
-            {
-                Console.WriteLine("Waiting for FingXml to be written.");
-                System.Threading.Thread.Sleep(new TimeSpan(0,0,10));
-            }
-            XDocument doc = XDocument.Load(PersistentSingleton<Settings>.Instance.FingXml);
-            foreach (var host in doc.Root.Element("Hosts").Elements())
-            {
-                var MacAddress = host.Element("HardwareAddress").Value;
-                var obj = KnownHosts.FirstOrDefault(n => n.HardwareAddress == MacAddress);
-                Merge(obj, host);
-            }
+            Tool.Refresh();
             Save();
         }
 
@@ -94,52 +87,21 @@ namespace Fingbot
             }
          }
 
-        private void Merge(Host host, XElement data)
+        public static void LookupVendor(object state)
         {
-            if (host == null)
-            {
-                host = new Host();
-                KnownHosts.Add(host);
+            try {
+                Host host = state as Host;
+                if (host == null)
+                    return;
+                WebClient wc = new WebClient();
+                var data = wc.DownloadString(string.Format("http://www.macvendorlookup.com/api/v2/{0}", host.HardwareAddress));
+                var json = Newtonsoft.Json.Linq.JArray.Parse(data);
+                host.Vendor = json[0]["company"].ToString();
             }
-            foreach (var key in data.Elements())
+            catch (Exception c)
             {
-                var prop = typeof(Host).GetProperties().FirstOrDefault(n => n.Name == key.Name);
-                if (prop.Name == "State")
-                {
-                    prop = typeof(Host).GetProperties().FirstOrDefault(n => n.Name == "RawState");
-                    prop.SetValue(host, key.Value, null);
-                    if (host.State != host.RawState && host.Uncertain)
-                    {
-                        host.State = host.RawState;
-                        host.Uncertain = false;
-                    }
-                    else
-                        host.Uncertain = true;
-                    continue;
-                }
-                if (prop != null && !string.IsNullOrEmpty(key.Value))
-                {
-                    prop.SetValue(host, key.Value, null);
-                }
-                if (prop.Name == "LastChangeTime") // Override this one every time.
-                    prop.SetValue(host, key.Value, null);
+
             }
-            if (string.IsNullOrEmpty(host.Vendor))
-                new TaskFactory().StartNew(new Action<object>(LookupVendor), host);
-            if (!string.IsNullOrEmpty(host.Owner) && !host.Owner.StartsWith("@") && host.Owner != "ADB")
-                host.Owner = "@" + host.Owner;
-        }
-
-        private void LookupVendor(object state)
-        {
-            Host host = state as Host;
-            if (host == null)
-                return;
-            WebClient wc = new WebClient();
-            var data = wc.DownloadString(string.Format("http://www.macvendorlookup.com/api/v2/{0}", host.HardwareAddress));
-            var json = Newtonsoft.Json.Linq.JArray.Parse(data);
-            host.Vendor = json[0]["company"].ToString();
-
         }
 
         internal Host PickCertainHost()
@@ -220,7 +182,8 @@ namespace Fingbot
                 n =>
                     p.Equals(n.Name, StringComparison.CurrentCultureIgnoreCase) ||
                     p.Equals(n.Hostname, StringComparison.CurrentCultureIgnoreCase) ||
-                    p.Equals(n.HardwareAddress, StringComparison.CurrentCultureIgnoreCase)
+                    p.Equals(n.HardwareAddress, StringComparison.CurrentCultureIgnoreCase) ||
+                    p.Equals(n.Address, StringComparison.CurrentCultureIgnoreCase)
             );
         }
     }

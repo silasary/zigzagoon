@@ -27,9 +27,9 @@ namespace Fingbot
 
         [DataMember]
         public string State { get; set; }
-
+        
         [DataMember]
-        public string RawState { get; set; }
+        public int LastSeen { get; set; }
 
         [DataMember]
         public string LastChangeTime { get; set; }
@@ -72,9 +72,17 @@ namespace Fingbot
         {
             get
             {
+                
                 if (String.IsNullOrWhiteSpace(LastChangeTime))
                     LastChangeTime = DateTime.Now.ToString();
-                return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalHours;
+                try {
+                    return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalHours;
+                }
+                catch (Exception c)
+                {
+                    LastChangeTime = DateTime.Now.ToString();
+                    return 0;
+                }
             }
             set { }
         }

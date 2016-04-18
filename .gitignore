@@ -154,3 +154,4 @@ UpgradeLog*.htm
 FakesAssemblies/
 packages/
 UnitTests/Secrets.cs
+.vs/

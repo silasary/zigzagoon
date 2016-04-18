@@ -26,13 +26,35 @@ namespace Fingbot
         public string Vendor { get; set; }
 
         [DataMember]
-        public string State { get; set; }
+        private bool IsUp;
+
+        public string State { get
+            {
+                if (IsUp == false)
+                    return "down";
+                if (DateTime.Now.Subtract(DateTime.FromFileTime(LastSeen)).TotalMinutes > 10)
+                {
+                    IsUp = false;
+                    LastChange = DateTime.Now.ToString();
+                }
+                return "up";
+            }
+            set
+            {
+                var WasUp = IsUp;
+                IsUp = value == "up";
+                if (IsUp != WasUp)
+                    LastChange = DateTime.Now.ToString();
+                if (IsUp)
+                    LastSeen = DateTime.Now.ToFileTime();
+            }
+        }
         
         [DataMember]
-        public int LastSeen { get; set; }
+        public long LastSeen { get; set; }
 
         [DataMember]
-        public string LastChangeTime { get; set; }
+        public string LastChange { get; set; }
 
         [DataMember]
         public string Type { get; set; }
@@ -61,7 +83,7 @@ namespace Fingbot
         {
             get
             {
-                if (LastChangeTime == null)
+                if (LastChange == null)
                     //LastChangeTime = this.FirstSeen;
                     return false;
                 return Age > PersistentSingleton<Settings>.Instance.MaxAge;
@@ -73,14 +95,14 @@ namespace Fingbot
             get
             {
                 
-                if (String.IsNullOrWhiteSpace(LastChangeTime))
-                    LastChangeTime = DateTime.Now.ToString();
+                if (String.IsNullOrWhiteSpace(LastChange))
+                    LastChange = DateTime.Now.ToString();
                 try {
-                    return DateTime.Now.Subtract(DateTime.Parse(this.LastChangeTime)).TotalHours;
+                    return DateTime.Now.Subtract(DateTime.Parse(this.LastChange)).TotalHours;
                 }
                 catch (Exception c)
                 {
-                    LastChangeTime = DateTime.Now.ToString();
+                    LastChange = DateTime.Now.ToString();
                     return 0;
                 }
             }

@@ -25,13 +25,13 @@ namespace Fingbot
             KnownHosts = Serialization.TryReadObject<List<Host>>("Hosts.json") ?? Serialization.TryReadObject<List<Host>>("Hosts.Backup.json") ?? new List<Host>();
             Serialization.WriteObject("Hosts.Backup.json", KnownHosts);
 
-            IScanner tool = new Scanners.Fing(KnownHosts);
+            IScanner tool = new Scanners.Nmap(KnownHosts);
             if (tool.IsValidTool())
             {
                 Tool = tool;
                 return;
             }
-            tool = new Scanners.Nmap(KnownHosts);
+            tool = new Scanners.Fing(KnownHosts);
             if (tool.IsValidTool())
             {
                 Tool = tool;

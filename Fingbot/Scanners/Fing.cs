@@ -21,31 +21,28 @@ namespace Fingbot.Scanners
         public bool IsValidTool()
         {
             var fing = Process.GetProcessesByName("fing");
-            if (fing.Length == 0)
+            if (fing.Length > 0)
             {
-                try
-                {
-                    var settings = PersistentSingleton<Settings>.Instance;
-                    if (string.IsNullOrEmpty(settings.FingXml))
-                        settings.FingXml = "fing.xml";
-                    if (string.IsNullOrEmpty(settings.FingArgs))
-                        settings.FingArgs = /*"--session data.dat " + */ "-o table,xml,fing.xml -o table,csv,console";
-                    var psi = new ProcessStartInfo("fing", settings.FingArgs)
-                    {
-                        UseShellExecute = false
-                    };
-                    Process.Start(psi);
-                    if (string.IsNullOrEmpty(settings.FingArgs))
-                        PersistentSingleton<Settings>.Dirty();
-                    return true;
-                }
-                catch (System.ComponentModel.Win32Exception)
-                {
-                }
+                fing.First().Close();
             }
-            else
+            try
             {
+                var settings = PersistentSingleton<Settings>.Instance;
+                if (string.IsNullOrEmpty(settings.FingXml))
+                    settings.FingXml = "fing.xml";
+                if (string.IsNullOrEmpty(settings.FingArgs))
+                    settings.FingArgs = /*"--session data.dat " + */ "-o table,xml,fing.xml -o table,csv,console";
+                var psi = new ProcessStartInfo("fing", settings.FingArgs)
+                {
+                    UseShellExecute = false
+                };
+                Process.Start(psi);
+                if (string.IsNullOrEmpty(settings.FingArgs))
+                    PersistentSingleton<Settings>.Dirty();
                 return true;
+            }
+            catch (System.ComponentModel.Win32Exception)
+            {
             }
             return false;
         }

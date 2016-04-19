@@ -16,7 +16,7 @@ namespace Fingbot.Commands
              * ****/
             var match = Regex.Match(
                 MessageText,
-                @"(Select|Pick|With) (?<name>[\w:]+)",
+                @"(Select|Pick|With) (?<name>[\w:\.]+)",
                 RegexOptions.IgnoreCase);
             if (IsTargeted && match.Success)
             {

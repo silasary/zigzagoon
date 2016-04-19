@@ -30,8 +30,11 @@ namespace Fingbot.Scanners
                         settings.FingXml = "fing.xml";
                     if (string.IsNullOrEmpty(settings.FingArgs))
                         settings.FingArgs = /*"--session data.dat " + */ "-o table,xml,fing.xml -o table,csv,console";
-
-                    Process.Start("fing", settings.FingArgs);
+                    var psi = new ProcessStartInfo("fing", settings.FingArgs)
+                    {
+                        UseShellExecute = false
+                    };
+                    Process.Start(psi);
                     if (string.IsNullOrEmpty(settings.FingArgs))
                         PersistentSingleton<Settings>.Dirty();
                     return true;

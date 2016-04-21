@@ -114,6 +114,7 @@
     <Compile Include="NetworkData.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="RegularExpressionSnippits.cs" />
     <Compile Include="Reminders.cs" />
     <Compile Include="Scanners\Fing.cs" />
     <Compile Include="Scanners\Nmap.cs" />

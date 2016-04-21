@@ -130,7 +130,7 @@ namespace Fingbot
                         }
                         catch (Exception)
                         { }
-                        if (DateTime.Now.Hour < 10)
+                        if (DateTime.Now.Hour < 7)
                             continue;
                         var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
                         if (inc != null && LastQuestion.Date != DateTime.Now.Date)
@@ -149,6 +149,7 @@ namespace Fingbot
                 catch (Exception c)
                 {
                     Console.WriteLine("!An Error has been caught!\n{0}", c);
+                    File.WriteAllText("Error.txt", c.ToString());
                 }
             };
         }
@@ -167,7 +168,7 @@ namespace Fingbot
                 //LogglyInst.Log(e.Data);
                 if (e.Data.Type == "hello")
                 {
-                    Console.WriteLine("Connected.");
+                    Console.WriteLine($"Connected to {instance.TeamInfo.Name}.");
                     var settings = PersistentSingleton<Settings>.Instance;
 
                     if (!settings.HasDoneIntroSpiel)

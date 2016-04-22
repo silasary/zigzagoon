@@ -54,6 +54,8 @@ namespace Fingbot
                     continue;
                 if (host.IsFixture)
                     continue;
+                if (host.IsOld)
+                    continue;
                 return host;
             }
             foreach (var host in KnownHosts) // Second time, we will show nameless devices.
@@ -63,6 +65,8 @@ namespace Fingbot
                 if (host.State == "down")
                     continue;
                 if (host.IsFixture)
+                    continue;
+                if (host.IsOld)
                     continue;
                 return host;
             }
@@ -151,6 +155,8 @@ namespace Fingbot
                 if (!string.IsNullOrWhiteSpace(host.Owner) || !string.IsNullOrWhiteSpace(host.Type))
                     continue;
                 if (host.State == "down")
+                    continue;
+                if (host.IsOld)
                     continue;
                 yield return host;
             }

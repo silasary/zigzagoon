@@ -168,7 +168,7 @@ namespace Fingbot
                 //LogglyInst.Log(e.Data);
                 if (e.Data.Type == "hello")
                 {
-                    Console.WriteLine($"Connected to {instance.TeamInfo.Name}.");
+                    Console.WriteLine(string.Format("Connected to {0}.", instance.TeamInfo.Name));
                     var settings = PersistentSingleton<Settings>.Instance;
 
                     if (!settings.HasDoneIntroSpiel)

@@ -38,6 +38,7 @@ namespace Fingbot
         static void Main(string[] args)
         {
             //AppDomain.CurrentDomain.FirstChanceException += CurrentDomain_FirstChanceException;
+            AppDomain.CurrentDomain.UnhandledException += AppDomain_CurrentDomain_UnhandledException;
             string confdir;
             Directory.CreateDirectory(confdir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
             Environment.CurrentDirectory = confdir;
@@ -104,6 +105,12 @@ namespace Fingbot
             }
         }
 
+        static void AppDomain_CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs e)
+        {
+            File.WriteAllText("Error.txt", e.ExceptionObject.ToString());
+
+        }
+
         static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
         {
             File.WriteAllText("Error.txt", e.Exception.ToString());
@@ -130,7 +137,7 @@ namespace Fingbot
                         }
                         catch (Exception)
                         { }
-                        if (DateTime.Now.Hour < 7)
+                        if (DateTime.Now.Hour < 10)
                             continue;
                         var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
                         if (inc != null && LastQuestion.Date != DateTime.Now.Date)
@@ -149,7 +156,6 @@ namespace Fingbot
                 catch (Exception c)
                 {
                     Console.WriteLine("!An Error has been caught!\n{0}", c);
-                    File.WriteAllText("Error.txt", c.ToString());
                 }
             };
         }
@@ -168,7 +174,7 @@ namespace Fingbot
                 //LogglyInst.Log(e.Data);
                 if (e.Data.Type == "hello")
                 {
-                    Console.WriteLine(string.Format("Connected to {0}.", instance.TeamInfo.Name));
+                    Console.WriteLine("Connected.");
                     var settings = PersistentSingleton<Settings>.Instance;
 
                     if (!settings.HasDoneIntroSpiel)

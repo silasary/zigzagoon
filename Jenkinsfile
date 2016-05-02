@@ -1,4 +1,4 @@
-﻿node() {
+node {
     stage 'Clone'
     git 'https://github.com/silasary/zigzagoon.git'
     stage 'Build'

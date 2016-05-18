@@ -34,7 +34,9 @@ namespace Fingbot.Scanners
                     settings.FingArgs = /*"--session data.dat " + */ "-o table,xml,fing.xml -o table,csv,console";
                 var psi = new ProcessStartInfo("fing", settings.FingArgs)
                 {
-                    UseShellExecute = false
+                    UseShellExecute = true,
+                    CreateNoWindow = true,
+                    WindowStyle = ProcessWindowStyle.Hidden,
                 };
                 Process.Start(psi);
                 if (string.IsNullOrEmpty(settings.FingArgs))

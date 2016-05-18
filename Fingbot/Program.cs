@@ -127,7 +127,7 @@ namespace Fingbot
                     if (!PersistentSingleton<Settings>.Instance.HasDoneIntroSpiel)
                         Thread.Sleep(TimeSpan.FromMinutes(1));
                     DateTime LastQuestion = new DateTime();
-                    int askchannel = 0;
+                    int askchannel = new Random().Next(0, slack.JoinedChannels.Count() - 1);
                     while (true)
                     {
                         Singleton<NetworkData>.Instance.Refresh();

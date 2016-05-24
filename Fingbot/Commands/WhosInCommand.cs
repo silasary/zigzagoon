@@ -21,6 +21,7 @@ namespace Fingbot.Commands
                RegexOptions.IgnoreCase);
             if (match.Success)
             {
+                Singleton<NetworkData>.Instance.Refresh();
                 var hosts = Singleton<NetworkData>.Instance.CertainHosts().ToList();
                 var unknowns = Singleton<NetworkData>.Instance.UnknownHosts().Count();
                 var people = new List<string>();

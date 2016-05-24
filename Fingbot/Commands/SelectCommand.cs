@@ -28,7 +28,7 @@ namespace Fingbot.Commands
                     Instance.SendMessage(RawMessage.Channel, "I couldn't find it");
                     return true;
                 }
-                Instance.SendMessage(RawMessage.Channel, string.Format("{0}: {1} ({2})", LastHost.FriendlyName, network.Status(LastHost), LastHost.Age));
+                Instance.SendMessage(RawMessage.Channel, string.Format("{0}: {1} [{2}] ({3})", LastHost.FriendlyName, LastHost.Owner, network.Status(LastHost), LastHost.Age.ToString()));
                 return true;
             }
             return false;

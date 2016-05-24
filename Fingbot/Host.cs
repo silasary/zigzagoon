@@ -74,7 +74,7 @@ namespace Fingbot
                 if (!string.IsNullOrWhiteSpace(Hostname))
                     return Hostname;
                 if (!string.IsNullOrEmpty(Vendor))
-                    return String.Format("`{0}` ({1})", HardwareAddress, Vendor);
+                    return String.Format(" `{0}` ({1})", HardwareAddress, Vendor);
                 return HardwareAddress;
             }
         }

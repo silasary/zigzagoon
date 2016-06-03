@@ -9,6 +9,7 @@ using System.Net;
 using System.IO;
 using System.Text;
 using System.Net.NetworkInformation;
+using System.Diagnostics.Contracts;
 
 namespace Fingbot
 {
@@ -183,7 +184,7 @@ namespace Fingbot
         }
 
         internal Host Find(string p)
-        {
+        { 
             return AllHosts.FirstOrDefault(
                 n =>
                     p.Equals(n.Name, StringComparison.CurrentCultureIgnoreCase) ||

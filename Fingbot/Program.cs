@@ -16,6 +16,8 @@ namespace Fingbot
 {
     class Program
     {
+        static Random random = new Random();
+
         static bool Running;
         static List<ICommand> Commands = new List<ICommand>() 
         { 
@@ -127,7 +129,7 @@ namespace Fingbot
                     if (!PersistentSingleton<Settings>.Instance.HasDoneIntroSpiel)
                         Thread.Sleep(TimeSpan.FromMinutes(1));
                     DateTime LastQuestion = new DateTime();
-                    int askchannel = new Random().Next(0, slack.JoinedChannels.Count() - 1);
+                    int askchannel = random.Next(0, slack.JoinedChannels.Count());
                     while (true)
                     {
                         Singleton<NetworkData>.Instance.Refresh();
@@ -137,7 +139,7 @@ namespace Fingbot
                         }
                         catch (Exception)
                         { }
-                        if (DateTime.Now.Hour < 10)
+                        if (DateTime.Now.Hour < 7)
                             continue;
                         var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
                         if (inc != null && LastQuestion.Date != DateTime.Now.Date)
@@ -174,7 +176,7 @@ namespace Fingbot
                 //LogglyInst.Log(e.Data);
                 if (e.Data.Type == "hello")
                 {
-                    Console.WriteLine("Connected.");
+                    Console.WriteLine(string.Format("Connected to {0}.", instance.TeamInfo.Name));
                     var settings = PersistentSingleton<Settings>.Instance;
 
                     if (!settings.HasDoneIntroSpiel)

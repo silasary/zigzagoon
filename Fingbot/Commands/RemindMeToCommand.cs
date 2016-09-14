@@ -20,11 +20,15 @@ namespace Fingbot.Commands
                 RegexOptions.IgnoreCase);
             if (IsTargeted && match.Success)
             {
+#if REMINDERS
                 var target = Instance.GetUser(match.Groups["un"].Success ? match.Groups["un"].Value : RawMessage.User);
                 Instance.SendMessage(RawMessage.Channel, string.Format("Ok. I'll remind {0} next time {1} in.", target.Name, "they're"));
                 PersistentSingleton<Reminders>.Instance.Add(target, match.Groups["Text"].Value);
                 PersistentSingleton<Reminders>.Instance.Check(Instance);
                 return true;
+#else
+                RawMessage.Reply(Instance, "This feature has been disabled.", true);
+#endif
             }
             return false;
         }

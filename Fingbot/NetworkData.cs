@@ -103,7 +103,7 @@ namespace Fingbot
                 var json = Newtonsoft.Json.Linq.JArray.Parse(data);
                 host.Vendor = json[0]["company"].ToString();
             }
-            catch (Exception c)
+            catch (Exception)
             {
 
             }

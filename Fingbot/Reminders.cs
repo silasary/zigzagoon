@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.Serialization;
 
+#if REMINDERS
 namespace Fingbot
 {
     [DataContract]
@@ -58,3 +59,4 @@ namespace Fingbot
         }
     }
 }
+#endif

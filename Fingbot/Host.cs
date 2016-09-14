@@ -100,7 +100,7 @@ namespace Fingbot
                 try {
                     return DateTime.Now.Subtract(DateTime.Parse(this.LastChange)).TotalHours;
                 }
-                catch (Exception c)
+                catch (Exception)
                 {
                     LastChange = DateTime.Now.ToString();
                     return 0;

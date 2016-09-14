@@ -45,7 +45,9 @@ namespace Fingbot
             Directory.CreateDirectory(confdir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "Fingbot"));
             Environment.CurrentDirectory = confdir;
             PersistentSingleton<Settings>.SavePath = "config.json";
+#if REMINDERS
             PersistentSingleton<Reminders>.SavePath = "reminders.json";
+#endif
             var settings = PersistentSingleton<Settings>.Instance;
             Singleton<NetworkData>.Instance.Refresh();
             //var missing = Singleton<NetworkData>.Instance.PickIncompleteHost();
@@ -135,7 +137,9 @@ namespace Fingbot
                         Singleton<NetworkData>.Instance.Refresh();
                         try
                         {
+#if REMINDERS
                             PersistentSingleton<Reminders>.Instance.Check(slack);
+#endif
                         }
                         catch (Exception)
                         { }

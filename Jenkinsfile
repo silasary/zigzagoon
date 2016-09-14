@@ -1,6 +1,6 @@
 node {
-    stage 'Clone'
-    checkout scm
+//    stage 'Clone'
+//    checkout scm
    
     stage 'Build'
     if (isUnix())
@@ -15,7 +15,7 @@ node {
     }
     
     stage 'Archive'
-    archive '**/bin/Debug/'
+    archive '**/bin/**/'
 
 	stage 'Post-Build'
 	step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''])

@@ -1,8 +1,5 @@
 node {
-//    stage 'Clone'
-//    checkout scm
-   
-    stage 'Build'
+    stage('Build') {
     if (isUnix())
     {
         sh 'nuget restore'
@@ -13,10 +10,11 @@ node {
       bat 'nuget restore'
       bat 'msbuild'
     }
-    
-    stage 'Archive'
-    archive '**/bin/**/'
-
-	stage 'Post-Build'
-	step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''])
+    }
+    stage('Archive') {
+      archiveArtifacts allowEmptyArchive: true, artifacts: '\'**/bin/**/', caseSensitive: false, excludes: null, fingerprint: true, onlyIfSuccessful: true
+    }
+	stage('Post-Build') {
+	  step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''])
+	}
 }

@@ -12,7 +12,8 @@ node {
     }
     }
     stage('Archive') {
-      archiveArtifacts allowEmptyArchive: true, artifacts: '\'**/bin/**/', caseSensitive: false, excludes: null, fingerprint: true, onlyIfSuccessful: true
+      archive '**/bin/**/'
+      //archiveArtifacts allowEmptyArchive: false, artifacts: '\'**/bin/**/', caseSensitive: false, excludes: null, fingerprint: true, onlyIfSuccessful: true
     }
 	stage('Post-Build') {
 	  step([$class: 'WarningsPublisher', canComputeNew: false, canResolveRelativePaths: false, consoleParsers: [[parserName: 'MSBuild']], defaultEncoding: '', excludePattern: '', healthy: '', includePattern: '', messagesPattern: '', unHealthy: ''])

@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
+using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
@@ -14,10 +15,13 @@ namespace Fingbot.Scanners
         private List<Host> KnownHosts;
 
         DateTime LastScan;
+        private readonly string Subnet;
 
         public Nmap(List<Host> knownHosts)
         {
             this.KnownHosts = knownHosts;
+            var networks = NetworkInterface.GetAllNetworkInterfaces().Where(i => i.OperationalStatus == OperationalStatus.Up && i.NetworkInterfaceType == NetworkInterfaceType.Ethernet).ToArray();
+            Subnet = networks[0].GetIPProperties().UnicastAddresses.First(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).CalculateNetwork().ToString() + "/24";
         }
 
         public bool IsValidTool()
@@ -43,8 +47,7 @@ namespace Fingbot.Scanners
                 .Where(i => i.OperationalStatus == OperationalStatus.Up)
                 .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback) // And maybe Tunnel?
                 .ToArray();
-            //TODO: Identify actual subnet
-            sb.Append("192.168.1.0/24");
+            sb.Append(Subnet);
             if (ScanOS)
                 sb.Append(" -O"); // Scan OS
             else

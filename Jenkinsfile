@@ -17,8 +17,8 @@ node {
     }
 
     stage('Archive') {
-      //archive '**/bin/**/'
-      archiveArtifacts allowEmptyArchive: false, artifacts: '\'**/bin/**/', caseSensitive: false, excludes: null, fingerprint: true, onlyIfSuccessful: true
+      archive '**/bin/**/'
+      //archiveArtifacts allowEmptyArchive: false, artifacts: '\'**/bin/**/', caseSensitive: false, excludes: null, fingerprint: true, onlyIfSuccessful: true
     }
 
 	stage('Post-Build') {

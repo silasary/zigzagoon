@@ -7,6 +7,7 @@ using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using System.Linq;
 
 namespace Fingbot.Scanners
 {
@@ -21,7 +22,11 @@ namespace Fingbot.Scanners
         {
             this.KnownHosts = knownHosts;
 
-            var networks = NetworkInterface.GetAllNetworkInterfaces().Where(i => i.OperationalStatus == OperationalStatus.Up && i.NetworkInterfaceType == NetworkInterfaceType.Ethernet || i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211).ToArray();
+            
+            var networks = (from i in NetworkInterface.GetAllNetworkInterfaces()
+                where i.OperationalStatus == OperationalStatus.Up
+                where i.NetworkInterfaceType == NetworkInterfaceType.Ethernet || i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211
+                select i).ToArray();
             Subnet = networks.FirstOrDefault()?.GetIPProperties().UnicastAddresses.First(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).CalculateNetwork().ToString() + "/24";
         }
 

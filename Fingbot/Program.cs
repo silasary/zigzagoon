@@ -7,10 +7,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Net;
-using System.Text;
 using System.Text.RegularExpressions;
 using System.Threading;
-using System.Threading.Tasks;
 
 namespace Fingbot
 {
@@ -112,7 +110,6 @@ namespace Fingbot
         static void AppDomain_CurrentDomain_UnhandledException (object sender, UnhandledExceptionEventArgs e)
         {
             File.WriteAllText("Error.txt", e.ExceptionObject.ToString());
-
         }
 
         static void CurrentDomain_FirstChanceException(object sender, System.Runtime.ExceptionServices.FirstChanceExceptionEventArgs e)
@@ -135,14 +132,14 @@ namespace Fingbot
                     while (true)
                     {
                         Singleton<NetworkData>.Instance.Refresh();
+#if REMINDERS
                         try
                         {
-#if REMINDERS
                             PersistentSingleton<Reminders>.Instance.Check(slack);
-#endif
                         }
                         catch (Exception)
                         { }
+#endif
                         if (DateTime.Now.Hour < 7)
                             continue;
                         var inc = Singleton<NetworkData>.Instance.PickIncompleteHost();
@@ -162,6 +159,7 @@ namespace Fingbot
                 catch (Exception c)
                 {
                     Console.WriteLine("!An Error has been caught!\n{0}", c);
+                    File.WriteAllText("Idlefunc_error.txt", c.ToString());
                 }
             };
         }

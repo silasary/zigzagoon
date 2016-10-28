@@ -17,7 +17,16 @@ namespace Fingbot
                 return null;
 
             var ip = addr.Address.GetAddressBytes();
-            var mask = addr.IPv4Mask.GetAddressBytes();
+            var mask = new byte[4];
+            try
+            {
+                mask = addr.IPv4Mask.GetAddressBytes();
+            }
+            catch (NotImplementedException) // Mono
+            {
+                mask = new byte[] { 255, 255, 255, 0 };
+            }
+
             var result = new Byte[4];
             for (int i = 0; i < 4; ++i)
             {

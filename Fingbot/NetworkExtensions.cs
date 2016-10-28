@@ -22,7 +22,7 @@ namespace Fingbot
             {
                 mask = addr.IPv4Mask.GetAddressBytes();
             }
-            catch (NotImplementedException) // Mono
+            catch (System.Reflection.TargetInvocationException) // Mono
             {
                 mask = new byte[] { 255, 255, 255, 0 };
             }

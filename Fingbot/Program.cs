@@ -62,7 +62,7 @@ namespace Fingbot
                     {
                         Console.WriteLine("Please obtain a Token, and paste it below:");
                         settings.Token = Console.ReadLine();
-                        PersistentSingleton<Settings>.Dirty();
+                        PersistentSingleton<Settings>.Save();
                     }
                     slack = new Slack(settings.Token);
                     Authed = slack.Init();
@@ -185,7 +185,7 @@ namespace Fingbot
                     {
                         var channel = instance.PrimaryChannel.IsMember ? instance.PrimaryChannel : instance.JoinedChannels.FirstOrDefault();
                         HelpCommand.Introduce(instance, channel);
-                        PersistentSingleton<Settings>.Dirty();
+                        PersistentSingleton<Settings>.Save();
                     }
                 }
                 if (e.Data is Message)
@@ -194,8 +194,8 @@ namespace Fingbot
                     var message = e.Data as Message;
                     if (message.Hidden)
                         return;
-                    var substMessage = SubstituteMarkup(message.ToString(), sender as Slack);
-                    Console.WriteLine(substMessage);
+                    var substMessage = SubstituteMarkup(message.Text, sender as Slack);
+                    Console.WriteLine(SubstituteMarkup(message.ToString(), sender as Slack));
 
                     if (message.User == instance.Self.Id)
                         return;

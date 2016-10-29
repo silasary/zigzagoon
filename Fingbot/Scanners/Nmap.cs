@@ -2,12 +2,10 @@
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Linq;
-using System.Net;
 using System.Net.NetworkInformation;
 using System.Text;
 using System.Threading.Tasks;
 using System.Xml.Linq;
-using System.Linq;
 
 namespace Fingbot.Scanners
 {
@@ -17,6 +15,8 @@ namespace Fingbot.Scanners
 
         DateTime LastScan;
         private readonly string Subnet;
+
+        public bool RequiresSudo { get; private set; }
 
         public Nmap(List<Host> knownHosts)
         {
@@ -28,6 +28,7 @@ namespace Fingbot.Scanners
                 where i.NetworkInterfaceType == NetworkInterfaceType.Ethernet || i.NetworkInterfaceType == NetworkInterfaceType.Wireless80211
                 select i).ToArray();
             Subnet = networks.FirstOrDefault()?.GetIPProperties().UnicastAddresses.First(a => a.Address.AddressFamily == System.Net.Sockets.AddressFamily.InterNetwork).CalculateNetwork().ToString() + "/24";
+            Console.WriteLine($"NMap range: {Subnet}");
         }
 
         public bool IsValidTool()
@@ -49,16 +50,12 @@ namespace Fingbot.Scanners
                 return XDocument.Load("nmap.xml");
             }
             var sb = new StringBuilder();
-            var interfaces = NetworkInterface.GetAllNetworkInterfaces()
-                .Where(i => i.OperationalStatus == OperationalStatus.Up)
-                .Where(i => i.NetworkInterfaceType != NetworkInterfaceType.Loopback) // And maybe Tunnel?
-                .ToArray();
             sb.Append(Subnet);
             if (ScanOS)
                 sb.Append(" -O"); // Scan OS
             else
                 sb.Append(" -sn"); // No Ports (faster)
-            sb.Append(" -PR"); // ARP Ping
+            //sb.Append(" -PR"); // ARP Ping
             sb.Append(" -oX nmap.xml"); // Output
 
             var psi = new ProcessStartInfo("nmap", sb.ToString())
@@ -116,7 +113,13 @@ namespace Fingbot.Scanners
             {
                 if (host.Element("status").Attribute("reason").Value == "localhost-response")
                     continue;
-                var MacAddress = host.Elements("address").First(a => a.Attribute("addrtype").Value == "mac").Attribute("addr").Value;
+                var MacAddress = host.Elements("address").FirstOrDefault(a => a.Attribute("addrtype").Value == "mac")?.Attribute("addr").Value;
+                if (MacAddress == null && !RequiresSudo)
+                {
+                    RequiresSudo = true;
+                    Refresh();
+                    return;
+                }
                 var hostinfo = KnownHosts.FirstOrDefault(n => n.HardwareAddress == MacAddress);
                 if (hostinfo == null)
                 {
